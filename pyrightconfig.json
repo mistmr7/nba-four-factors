@@ -1,0 +1,8 @@
+{
+  "include": ["nba_four_factors", "tests"],
+  "exclude": ["**/__pycache__", "data", "logs"],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": "none"
+}

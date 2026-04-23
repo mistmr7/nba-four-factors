@@ -1,0 +1,70 @@
+[project]
+name = "nba-four-factors"
+version = "0.1.0"
+description = "NBA four-factors analytics pipeline with regression baseline and LSTM augmentation for playoff prediction"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+authors = [
+    { name = "Michael Mistarz" },
+]
+
+dependencies = [
+    "nba_api>=1.7.0",
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",
+    "pyarrow>=15.0.0",
+    "duckdb>=1.1.0",
+    "requests>=2.31.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "vcrpy>=6.0.0",
+    "ruff>=0.6.0",
+    "pyright>=1.1.380",
+    "pre-commit>=3.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "E501",  # line too long — formatter handles this
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+
+[tool.coverage.run]
+source = ["nba_four_factors"]
+omit = ["*/tests/*", "*/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+precision = 1

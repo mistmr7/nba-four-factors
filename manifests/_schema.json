@@ -1,0 +1,23 @@
+{
+  "season": "2024-25",
+  "season_type": "Regular Season",
+  "pulled_at": "2026-04-24T03:17:42Z",
+  "nba_api_version": "1.7.0",
+  "pipeline_version": "0.1.0",
+  "duration_seconds": 8423,
+  "endpoints_pulled": [
+    "league_game_log",
+    "box_score_advanced_v2",
+    "box_score_summary_v2"
+  ],
+  "expected_game_count": 1230,
+  "actual_game_count": 1230,
+  "game_ids": ["0022400001"],
+  "missing_or_failed": [],
+  "row_counts": {
+    "league_game_log": 2460,
+    "box_score_advanced_v2": 2460,
+    "box_score_summary_v2": 1230
+  },
+  "notes": []
+}
