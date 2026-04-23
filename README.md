@@ -25,7 +25,7 @@ uv run pre-commit install
 
 - `nba_four_factors/` — main package (fetcher, storage, orchestration)
 - `manifests/` — per-(season, season_type) integrity records (committed)
-- `data/` — bronze/silver/gold layers (gitignored, regenerated via fetcher)
+- `data/` — raw/processed/features layers (gitignored, regenerated via fetcher)
 - `tests/` — unit + integration tests
 - `scripts/` — one-off investigation code
 
