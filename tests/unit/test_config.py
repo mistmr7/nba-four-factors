@@ -214,6 +214,9 @@ class TestEndpoint:
             "BOXSCORE_TRADITIONAL",
             "BOXSCORE_ADVANCED",
             "BOXSCORE_SUMMARY",
+            "BOXSCORE_TRADITIONAL_V3",
+            "BOXSCORE_ADVANCED_V3",
+            "BOXSCORE_SUMMARY_V3",
         }
 
     def test_schedule_endpoint_value(self):
@@ -221,10 +224,16 @@ class TestEndpoint:
         assert Endpoint.SCHEDULE.value == "leaguegamelog"
 
     def test_boxscore_versions_pinned(self):
-        # v2 endpoints specifically; v3 exists but has different schema
+        # V2 used for seasons before V3_CUTOVER_SEASON; V3 used from cutover onward.
+        # See config.endpoint_for_season for dispatch.
         assert Endpoint.BOXSCORE_TRADITIONAL.value == "boxscoretraditionalv2"
         assert Endpoint.BOXSCORE_ADVANCED.value == "boxscoreadvancedv2"
         assert Endpoint.BOXSCORE_SUMMARY.value == "boxscoresummaryv2"
+
+    def test_boxscore_v3_versions_pinned(self):
+        assert Endpoint.BOXSCORE_TRADITIONAL_V3.value == "boxscoretraditionalv3"
+        assert Endpoint.BOXSCORE_ADVANCED_V3.value == "boxscoreadvancedv3"
+        assert Endpoint.BOXSCORE_SUMMARY_V3.value == "boxscoresummaryv3"
 
     def test_values_are_filesystem_safe(self):
         # Enum value doubles as raw-layer subdir name; must be safe
