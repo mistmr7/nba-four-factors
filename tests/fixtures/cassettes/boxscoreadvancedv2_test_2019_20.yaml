@@ -1,0 +1,78 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/plain, */*
+      Accept-Encoding:
+      - gzip, deflate, br
+      Accept-Language:
+      - en-US,en;q=0.5
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Host:
+      - stats.nba.com
+      Pragma:
+      - no-cache
+      Referer:
+      - https://www.nba.com/
+      Sec-Ch-Ua:
+      - '"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"'
+      Sec-Ch-Ua-Mobile:
+      - ?0
+      Sec-Fetch-Dest:
+      - empty
+    method: GET
+    uri: https://stats.nba.com/stats/boxscoreadvancedv2?EndPeriod=0&EndRange=0&GameID=0021900001&RangeType=0&StartPeriod=0&StartRange=0
+  response:
+    body:
+      string: '{}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Cache-Control:
+      - public, max-age=120
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Mon, 27 Apr 2026 17:13:48 GMT
+      Set-Cookie:
+      - bm_s=YAAQjGPKF7Z5g3KdAQAAGdTuzwW5ZrfUF+WxdKxMc3oXouj19bFw/6Ff+4ZAgzwFXPaWKSY52xOvxkNmwk9OANvi9thcN+BwU4chLdxWu7YgsCZ2aoxSLznGVadiqvjwjLA69Oq4VojRqFk6SIEe4iZhDAWJ5M8+LkOeMtpYeXd2VUZr9nMVczbpq0deuCUwV8/NT4iOY672qnbZFDJqX7LDqe6xJI2kGuvp4RDBG4xIipQpjy/R6b+tkUp+eLUHZGAHz0Cpgk7cHps8Y/5Y9TDQrRTKLZ36qJw7B4eFBrHrEbvIAFHAxGwEOZJ+5G6kSDFDrESLQ5algZVCS4Ybn9trIuPikhLPxxGjW55RWo7tBM0YuGaSYq6KLqEW7SZyHHbggQc8rg1WmteV+UXlHad5M3zHy82VtfQ1Li2PeGaJQ+52QmIRmrW7ChKP+Rc1DfzdarjV7W3a0r77Y4b/h+ZoSX6ZNkZdpFEt/HcNyO+GdN2ClpR97NEn/E7agOfGv8KXn9pGe8lrJWsVR7zUZBBQd4EdXqyZTksn/mNjFkyrowHmtpt/IcPjUZV0xiX+Qpd+IkSVMXNJ49OQEBPLR2KkmYZXrp2omX0EZG0FK4rUzo6FyycaBE9PVMmvbjwGWBaNi3gBZh7vS3SzOgoQLI4KMpQYGH/J3DaCGPlyNWZNuHxYA7NPVZj1Wd6HtVyA0LkqZxCD7rj7UPEDyAOYGD0uLOW26rkKTIqfGYnu36IcW12PR6fbas1N7/HsuV9BG/4422wP3/F6a0lTIBPTY6RODQW+9b0AqTwLFncgQoiYhw9r+zEAhWUMJtQAmiOhMWvh+m82UX+Cx3BBc5LiGhLZ642foBNKXbtc;
+        Domain=.nba.com; Path=/; Expires=Thu, 28 May 2026 17:13:48 GMT; Max-Age=2678400;
+        Secure; HttpOnly
+      Strict-Transport-Security:
+      - max-age=86400
+      Vary:
+      - Accept-Encoding
+      content-length:
+      - '2'
+      x-cache-ability:
+      - cacheable
+      x-edge-ttl:
+      - '!no-store,max-age=120'
+      x-envoy-upstream-service-time:
+      - '1'
+      x-etag:
+      - ''
+      x-full-ttl:
+      - '120.000'
+      x-grace:
+      - '86400.000'
+      x-hits:
+      - '0'
+      x-status:
+      - miss
+      x-varnish:
+      - '611845788'
+      x-vcl-region:
+      - West US2
+      x-vcl-version:
+      - NBA.com prod 1.7a
+    status:
+      code: 200
+      message: OK
+version: 1

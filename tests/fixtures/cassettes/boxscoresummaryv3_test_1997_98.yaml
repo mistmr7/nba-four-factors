@@ -1,0 +1,105 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/plain, */*
+      Accept-Encoding:
+      - gzip, deflate, br
+      Accept-Language:
+      - en-US,en;q=0.5
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Host:
+      - stats.nba.com
+      Pragma:
+      - no-cache
+      Referer:
+      - https://www.nba.com/
+      Sec-Ch-Ua:
+      - '"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"'
+      Sec-Ch-Ua-Mobile:
+      - ?0
+      Sec-Fetch-Dest:
+      - empty
+    method: GET
+    uri: https://stats.nba.com/stats/boxscoresummaryv3?GameID=0029700001
+  response:
+    body:
+      string: '{"meta":{"version":1,"request":"http://nba.cloud/games/0029700001/boxscoresummary?Format=json","time":"2025-02-18T17:06:59.659Z"},"boxScoreSummary":{"gameId":"0029700001","gameCode":"19971031/CHIBOS","gameStatus":3,"gameStatusText":"Final","period":4,"gameClock":"PT00M00.00S","gameTimeUTC":"1997-11-01T01:00:00Z","gameEt":"1997-10-31T20:00:00Z","awayTeamId":1610612741,"homeTeamId":1610612738,"duration":"2:17","attendance":18624,"sellout":0,"seriesGameNumber":"","gameLabel":"","gameSubLabel":"","seriesText":"","ifNecessary":false,"isNeutral":false,"arena":{"arenaId":17,"arenaName":"TD
+        Garden","arenaCity":"Boston","arenaState":"MA","arenaCountry":"US","arenaTimezone":"Eastern","arenaStreetAddress":"","arenaPostalCode":""},"officials":[],"broadcasters":{"nationalBroadcasters":[],"nationalRadioBroadcasters":[],"nationalOttBroadcasters":[],"homeTvBroadcasters":[],"homeRadioBroadcasters":[],"homeOttBroadcasters":[],"awayTvBroadcasters":[],"awayRadioBroadcasters":[],"awayOttBroadcasters":[]},"homeTeam":{"teamId":1610612738,"teamName":"Celtics","teamCity":"Boston","teamTricode":"BOS","teamSlug":"celtics","teamWins":36,"teamLosses":46,"score":92,"inBonus":"","timeoutsRemaining":0,"seed":0,"statistics":{"dummyKey":"dummyValue"},"periods":[{"period":1,"periodType":"REGULAR","score":12},{"period":2,"periodType":"REGULAR","score":22},{"period":3,"periodType":"REGULAR","score":34},{"period":4,"periodType":"REGULAR","score":24}],"players":[{"personId":442,"name":"Pervis
+        Ellison","nameI":"P. Ellison","firstName":"Pervis","familyName":"Ellison","jerseyNum":"29"},{"personId":344,"name":"Dana
+        Barros","nameI":"D. Barros","firstName":"Dana","familyName":"Barros","jerseyNum":"11"},{"personId":1497,"name":"Chauncey
+        Billups","nameI":"C. Billups","firstName":"Chauncey","familyName":"Billups","jerseyNum":"4"},{"personId":962,"name":"Walter
+        McCarty","nameI":"W. McCarty","firstName":"Walter","familyName":"McCarty","jerseyNum":"0"},{"personId":1500,"name":"Ron
+        Mercer","nameI":"R. Mercer","firstName":"Ron","familyName":"Mercer","jerseyNum":"5"},{"personId":963,"name":"Dontae''
+        Jones","nameI":"D. Jones","firstName":"Dontae''","familyName":"Jones","jerseyNum":"13"},{"personId":1519,"name":"John
+        Thomas","nameI":"J. Thomas","firstName":"John","familyName":"Thomas","jerseyNum":"55"},{"personId":952,"name":"Antoine
+        Walker","nameI":"A. Walker","firstName":"Antoine","familyName":"Walker","jerseyNum":"8"},{"personId":1477,"name":"Bruce
+        Bowen","nameI":"B. Bowen","firstName":"Bruce","familyName":"Bowen","jerseyNum":"12"},{"personId":692,"name":"Andrew
+        DeClercq","nameI":"A. DeClercq","firstName":"Andrew","familyName":"DeClercq","jerseyNum":"45"},{"personId":244,"name":"Dee
+        Brown","nameI":"D. Brown","firstName":"Dee","familyName":"Brown","jerseyNum":""},{"personId":969,"name":"Travis
+        Knight","nameI":"T. Knight","firstName":"Travis","familyName":"Knight","jerseyNum":"40"}],"inactives":[]},"awayTeam":{"teamId":1610612741,"teamName":"Bulls","teamCity":"Chicago","teamTricode":"CHI","teamSlug":"bulls","teamWins":62,"teamLosses":20,"score":85,"inBonus":"","timeoutsRemaining":0,"seed":0,"statistics":{"dummyKey":"dummyValue"},"periods":[{"period":1,"periodType":"REGULAR","score":32},{"period":2,"periodType":"REGULAR","score":11},{"period":3,"periodType":"REGULAR","score":15},{"period":4,"periodType":"REGULAR","score":27}],"players":[{"personId":166,"name":"Ron
+        Harper","nameI":"R. Harper","firstName":"Ron","familyName":"Harper","jerseyNum":"9"},{"personId":26,"name":"Luc
+        Longley","nameI":"L. Longley","firstName":"Luc","familyName":"Longley","jerseyNum":"13"},{"personId":82,"name":"Bill
+        Wennington","nameI":"B. Wennington","firstName":"Bill","familyName":"Wennington","jerseyNum":"34"},{"personId":753,"name":"Randy
+        Brown","nameI":"R. Brown","firstName":"Randy","familyName":"Brown","jerseyNum":"1"},{"personId":679,"name":"Jason
+        Caffey","nameI":"J. Caffey","firstName":"Jason","familyName":"Caffey","jerseyNum":"35"},{"personId":70,"name":"Steve
+        Kerr","nameI":"S. Kerr","firstName":"Steve","familyName":"Kerr","jerseyNum":"25"},{"personId":389,"name":"Toni
+        Kukoc","nameI":"T. Kukoc","firstName":"Toni","familyName":"Kukoc","jerseyNum":"7"},{"personId":170,"name":"Joe
+        Kleine","nameI":"J. Kleine","firstName":"Joe","familyName":"Kleine","jerseyNum":"53"},{"personId":146,"name":"Jud
+        Buechler","nameI":"J. Buechler","firstName":"Jud","familyName":"Buechler","jerseyNum":"30"},{"personId":893,"name":"Michael
+        Jordan","nameI":"M. Jordan","firstName":"Michael","familyName":"Jordan","jerseyNum":"23"},{"personId":197,"name":"Scott
+        Burrell","nameI":"S. Burrell","firstName":"Scott","familyName":"Burrell","jerseyNum":"24"},{"personId":23,"name":"Dennis
+        Rodman","nameI":"D. Rodman","firstName":"Dennis","familyName":"Rodman","jerseyNum":"91"}],"inactives":[]},"lastFiveMeetings":{"meetings":[{"recencyOrder":1,"gameId":"0029601042","gameTimeUTC":"1997-04-02T01:30:00Z","gameEt":"1997-04-01T20:30:00Z","gameStatus":3,"gameStatusText":"Final","gameClock":"PT00M00.00S","broadcasterVideoLink":"","awayTeam":{"teamId":1610612738,"teamCity":"Boston","teamName":"Celtics","teamTricode":"BOS","teamSlug":"celtics","score":106,"wins":0,"losses":0},"homeTeam":{"teamId":1610612741,"teamCity":"Chicago","teamName":"Bulls","teamTricode":"CHI","teamSlug":"bulls","score":111,"wins":0,"losses":0}},{"recencyOrder":2,"gameId":"0029600888","gameTimeUTC":"1997-03-12T00:00:00Z","gameEt":"1997-03-11T19:00:00Z","gameStatus":3,"gameStatusText":"Final","gameClock":"PT00M00.00S","broadcasterVideoLink":"","awayTeam":{"teamId":1610612741,"teamCity":"Chicago","teamName":"Bulls","teamTricode":"CHI","teamSlug":"bulls","score":117,"wins":0,"losses":0},"homeTeam":{"teamId":1610612738,"teamCity":"Boston","teamName":"Celtics","teamTricode":"BOS","teamSlug":"celtics","score":106,"wins":0,"losses":0}},{"recencyOrder":3,"gameId":"0029600066","gameTimeUTC":"1996-11-10T01:30:00Z","gameEt":"1996-11-09T20:30:00Z","gameStatus":3,"gameStatusText":"Final","gameClock":"PT00M00.00S","broadcasterVideoLink":"","awayTeam":{"teamId":1610612738,"teamCity":"Boston","teamName":"Celtics","teamTricode":"BOS","teamSlug":"celtics","score":92,"wins":0,"losses":0},"homeTeam":{"teamId":1610612741,"teamCity":"Chicago","teamName":"Bulls","teamTricode":"CHI","teamSlug":"bulls","score":104,"wins":0,"losses":0}},{"recencyOrder":4,"gameId":"0029600001","gameTimeUTC":"1996-11-02T00:00:00Z","gameEt":"1996-11-01T19:00:00Z","gameStatus":3,"gameStatusText":"Final","gameClock":"PT00M00.00S","broadcasterVideoLink":"","awayTeam":{"teamId":1610612741,"teamCity":"Chicago","teamName":"Bulls","teamTricode":"CHI","teamSlug":"bulls","score":107,"wins":0,"losses":0},"homeTeam":{"teamId":1610612738,"teamCity":"Boston","teamName":"Celtics","teamTricode":"BOS","teamSlug":"celtics","score":98,"wins":0,"losses":0}},{"recencyOrder":5,"gameId":"0029500820","gameTimeUTC":"1996-03-03T01:00:00Z","gameEt":"1996-03-02T20:00:00Z","gameStatus":3,"gameStatusText":"Final","gameClock":"PT00M00.00S","broadcasterVideoLink":"","awayTeam":{"teamId":1610612738,"teamCity":"Boston","teamName":"Celtics","teamTricode":"BOS","teamSlug":"celtics","score":75,"wins":0,"losses":0},"homeTeam":{"teamId":1610612741,"teamCity":"Chicago","teamName":"Bulls","teamTricode":"CHI","teamSlug":"bulls","score":107,"wins":0,"losses":0}}]},"pregameCharts":{"homeTeam":{"teamId":1610612738,"teamCity":"Boston","teamName":"Celtics","teamTricode":"BOS","statistics":{"points":95.9,"reboundsTotal":39.5,"assists":22.1,"steals":12.0,"blocks":4.5,"turnovers":15.6,"fieldGoalsPercentage":0.434,"threePointersPercentage":0.332,"freeThrowsPercentage":0.726,"pointsInThePaint":41.3,"pointsSecondChance":16.5,"pointsFastBreak":15.2,"playerPtsLeaderFirstName":"Antoine","playerPtsLeaderFamilyName":"Walker","playerPtsLeaderId":952,"playerPtsLeaderPts":22.4,"playerRebLeaderFirstName":"Antoine","playerRebLeaderFamilyName":"Walker","playerRebLeaderId":952,"playerRebLeaderReb":10.2,"playerAstLeaderFirstName":"Dana","playerAstLeaderFamilyName":"Barros","playerAstLeaderId":344,"playerAstLeaderAst":3.6,"playerBlkLeaderFirstName":"Travis","playerBlkLeaderFamilyName":"Knight","playerBlkLeaderId":969,"playerBlkLeaderBlk":1.11}},"awayTeam":{"teamId":1610612741,"teamCity":"Chicago","teamName":"Bulls","teamTricode":"CHI","statistics":{"points":96.7,"reboundsTotal":44.9,"assists":23.8,"steals":8.5,"blocks":4.3,"turnovers":13.3,"fieldGoalsPercentage":0.451,"threePointersPercentage":0.323,"freeThrowsPercentage":0.743,"pointsInThePaint":38.9,"pointsSecondChance":16.1,"pointsFastBreak":13.2,"playerPtsLeaderFirstName":"Michael","playerPtsLeaderFamilyName":"Jordan","playerPtsLeaderId":893,"playerPtsLeaderPts":28.7,"playerRebLeaderFirstName":"Dennis","playerRebLeaderFamilyName":"Rodman","playerRebLeaderId":23,"playerRebLeaderReb":15.0,"playerAstLeaderFirstName":"Toni","playerAstLeaderFamilyName":"Kukoc","playerAstLeaderId":389,"playerAstLeaderAst":4.2,"playerBlkLeaderFirstName":"Ron","playerBlkLeaderFamilyName":"Harper","playerBlkLeaderId":166,"playerBlkLeaderBlk":0.59}}},"postgameCharts":{"homeTeam":{"teamId":1610612738,"teamCity":"Boston","teamName":"Celtics","teamTricode":"BOS","statistics":{"points":92.0,"reboundsTotal":52.0,"assists":18.0,"steals":10.0,"blocks":5.0,"turnovers":23.0,"fieldGoalsPercentage":0.422,"threePointersPercentage":0.278,"freeThrowsPercentage":0.733,"pointsInThePaint":42.0,"pointsSecondChance":21.0,"pointsFastBreak":16.0,"biggestLead":12.0,"leadChanges":1.0,"timesTied":3.0,"biggestScoringRun":8.0,"turnoversTeam":1.0,"turnoversTotal":24.0,"reboundsTeam":8.0,"pointsFromTurnovers":0.0,"benchPoints":92.0,"playerPtsLeaderFirstName":"Antoine","playerPtsLeaderFamilyName":"Walker","playerPtsLeaderId":952,"playerPtsLeaderPts":31.0,"playerRebLeaderFirstName":"Travis","playerRebLeaderFamilyName":"Knight","playerRebLeaderId":969,"playerRebLeaderReb":13.0,"playerAstLeaderFirstName":"Dana","playerAstLeaderFamilyName":"Barros","playerAstLeaderId":344,"playerAstLeaderAst":3.0,"playerBlkLeaderFirstName":"Antoine","playerBlkLeaderFamilyName":"Walker","playerBlkLeaderId":952,"playerBlkLeaderBlk":2.0}},"awayTeam":{"teamId":1610612741,"teamCity":"Chicago","teamName":"Bulls","teamTricode":"CHI","statistics":{"points":85.0,"reboundsTotal":41.0,"assists":16.0,"steals":12.0,"blocks":6.0,"turnovers":20.0,"fieldGoalsPercentage":0.418,"threePointersPercentage":0.125,"freeThrowsPercentage":0.621,"pointsInThePaint":48.0,"pointsSecondChance":13.0,"pointsFastBreak":12.0,"biggestLead":20.0,"leadChanges":1.0,"timesTied":3.0,"biggestScoringRun":10.0,"turnoversTeam":1.0,"turnoversTotal":21.0,"reboundsTeam":12.0,"pointsFromTurnovers":0.0,"benchPoints":85.0,"playerPtsLeaderFirstName":"Michael","playerPtsLeaderFamilyName":"Jordan","playerPtsLeaderId":893,"playerPtsLeaderPts":30.0,"playerRebLeaderFirstName":"Dennis","playerRebLeaderFamilyName":"Rodman","playerRebLeaderId":23,"playerRebLeaderReb":9.0,"playerAstLeaderFirstName":"Ron","playerAstLeaderFamilyName":"Harper","playerAstLeaderId":166,"playerAstLeaderAst":4.0,"playerBlkLeaderFirstName":"Luc","playerBlkLeaderFamilyName":"Longley","playerBlkLeaderId":26,"playerBlkLeaderBlk":2.0}}},"videoAvailableFlag":0,"ptAvailable":0,"ptXYZAvailable":0,"whStatus":1,"hustleStatus":0,"historicalStatus":0,"gameSubtype":""}}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Cache-Control:
+      - public, max-age=120
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Mon, 27 Apr 2026 17:34:38 GMT
+      Set-Cookie:
+      - bm_s=YAAQkGPKF1UGRbudAQAAteUB0AXdO861MP0jzi4kq0cjvo3d0q5DcCdwEofubM46E2vhr7Apx/UcXbuUYykYbQmBA1f4GXYUnU5XvuYPuzgEJlAnMGFRhJOgqC32YP5mGHsAsKqTpdLm9HzLa4iS97mYsx120vIit6WQzPFDtSmsaFFo3Wnswr1jO/4ATINzOYKv+o5IBp1Wd8hH/hGj1JQCHydz54T+R7XCfHqsr9meI4iV4dXb50cHhwk2lWY9g71ZdOe2/sAIuznUclk1oMuaGJ5FkaVaE7OpjhD+SQ1ap4ocX13r4FvlZ6olNIpMhPJnU4k5XjJcxSOjqZnagaYmK586gQxRGJmVQivYjfiDIFQtd22BMc0+WOZyDpfCDWbEHZ6pjwxbBGuLpsZdrZ4RW1ULbr3F7IqudRRjTGSuzJ4GhYKKjMlXdB8MxVD1tsAUNFBCk+9NhWI/eMYdleqIw6ypVO1gMLsK5tuCOXuf7xcDTQ4pBHVat2OP3mN2hO6wNcIwfagefmiG8cGnjyTXd3KP/WX0fuOoCHZE983dDsRm9U1T29/bQEVOMqu94kfLPgega5uGj1SrQSajtMBBIvOg/sUJSZJwCzr7IT5W8cBrmthopzrvKgfmy2VfpfCDKF5IYiPnPMJQ/1PufFU6GgFkTdwt60c1CJK5s5ECeqlwegPOQ5mhNfFmk7Pfmt9xoadyuPbJcdq3segoC7F6GWS7n44WCiVg6vB0uqEvMQ1IV55AhOlXx1iMvNJjkKC+re/Z86kU+U0Y4uVFuaW+Pxh4zB+cSC61PHYD8yG/KGWu0MIZ89naGnkuhm7WAVNj9eEZXJy7KODk9FphYfLFZnZsDa4YfSBv;
+        Domain=.nba.com; Path=/; Expires=Thu, 28 May 2026 17:34:38 GMT; Max-Age=2678400;
+        Secure; HttpOnly
+      Strict-Transport-Security:
+      - max-age=86400
+      Vary:
+      - Accept-Encoding
+      content-length:
+      - '11203'
+      x-cache-ability:
+      - cacheable
+      x-datasource:
+      - S3
+      x-edge-ttl:
+      - '!no-store,max-age=120'
+      x-envoy-upstream-service-time:
+      - '173'
+      x-etag:
+      - ''
+      x-full-ttl:
+      - '120.000'
+      x-grace:
+      - '86400.000'
+      x-hits:
+      - '0'
+      x-status:
+      - miss
+      x-varnish:
+      - '617906070'
+      x-vcl-region:
+      - West US2
+      x-vcl-version:
+      - NBA.com prod 1.7a
+    status:
+      code: 200
+      message: OK
+version: 1
