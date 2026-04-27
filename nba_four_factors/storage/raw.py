@@ -36,7 +36,7 @@ def raw_season_path(endpoint: Endpoint, season: str, season_type: SeasonType) ->
 
 
 def raw_game_path(endpoint: Endpoint, game_id: str) -> Path:
-    """Path for per-game endpoint pulls (boxscore*v2)."""
+    """Path for per-game endpoint pulls (boxscore* endpoints)."""
     if not game_id or not game_id.isdigit():
         raise ValueError(f"game_id must be a digit string, got {game_id!r}")
     return RAW_DIR / endpoint.value / f"{game_id}.json"

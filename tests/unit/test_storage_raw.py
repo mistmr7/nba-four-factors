@@ -51,17 +51,17 @@ class TestRawGamePath:
     def test_boxscore_traditional(self, monkeypatch, tmp_path):
         monkeypatch.setattr(raw_storage, "RAW_DIR", tmp_path)
         path = raw_game_path(Endpoint.BOXSCORE_TRADITIONAL, "0022300001")
-        assert path == tmp_path / "boxscoretraditionalv2" / "0022300001.json"
+        assert path == tmp_path / "boxscoretraditionalv3" / "0022300001.json"
 
     def test_boxscore_advanced(self, monkeypatch, tmp_path):
         monkeypatch.setattr(raw_storage, "RAW_DIR", tmp_path)
         path = raw_game_path(Endpoint.BOXSCORE_ADVANCED, "0022300001")
-        assert path == tmp_path / "boxscoreadvancedv2" / "0022300001.json"
+        assert path == tmp_path / "boxscoreadvancedv3" / "0022300001.json"
 
     def test_boxscore_summary(self, monkeypatch, tmp_path):
         monkeypatch.setattr(raw_storage, "RAW_DIR", tmp_path)
         path = raw_game_path(Endpoint.BOXSCORE_SUMMARY, "0042300401")
-        assert path == tmp_path / "boxscoresummaryv2" / "0042300401.json"
+        assert path == tmp_path / "boxscoresummaryv3" / "0042300401.json"
 
     def test_rejects_empty_game_id(self):
         with pytest.raises(ValueError, match="game_id"):

@@ -75,7 +75,7 @@ class TestSuccessfulFetch:
         client = _client(session)
         client.fetch(Endpoint.BOXSCORE_TRADITIONAL, {"GameID": "0022300001"})
         url_arg = session.get.call_args.args[0]
-        assert url_arg == BASE_URL.format(endpoint="boxscoretraditionalv2")
+        assert url_arg == BASE_URL.format(endpoint="boxscoretraditionalv3")
 
     def test_sorts_params_alphabetically(self):
         session = _session()

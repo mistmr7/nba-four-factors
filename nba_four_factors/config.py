@@ -80,6 +80,13 @@ RETRY_STATUS_CODES: frozenset[int] = frozenset({429, 500, 502, 503, 504})
 # Values are the nba_api endpoint module names, which double as the raw-layer
 # subdirectory name under RAW_DIR. One string, two purposes, no mapping dict.
 #
+# Box-score endpoints are V3-only: empirical findings (Session 5) confirmed
+# boxscoreadvancedv2 returns '{}' for ALL tested historical seasons (the
+# endpoint is dead at the API level, not just deprecated for new data), and
+# V3 reaches cleanly back to 1997-98 across traditional, advanced, and
+# summary. The Python member names drop the V2/V3 distinction since only V3
+# exists; the value strings retain "v3" because the URL path requires them.
+#
 # Scope is deliberately narrow: every member corresponds to an actual
 # Phase 2 call site. New endpoints are added alongside the code that calls
 # them, not in anticipation.
@@ -87,18 +94,9 @@ RETRY_STATUS_CODES: frozenset[int] = frozenset({429, 500, 502, 503, 504})
 
 class Endpoint(StrEnum):
     SCHEDULE = "leaguegamelog"
-    BOXSCORE_TRADITIONAL = "boxscoretraditionalv2"
-    BOXSCORE_ADVANCED = "boxscoreadvancedv2"
-    BOXSCORE_SUMMARY = "boxscoresummaryv2"
-    # V3 endpoints. V2 box scores stop being published as of the 2025-26
-    # season (Traditional and Summary are deprecated; Advanced V2 is not but
-    # is held in V2 for consistency in pre-2025-26 backfill). V3 is used for
-    # 2025-26 onward via endpoint_for_season(). Both versions carry the
-    # four-factor inputs needed for downstream calculations; the processed
-    # layer normalizes to a single canonical schema.
-    BOXSCORE_TRADITIONAL_V3 = "boxscoretraditionalv3"
-    BOXSCORE_ADVANCED_V3 = "boxscoreadvancedv3"
-    BOXSCORE_SUMMARY_V3 = "boxscoresummaryv3"
+    BOXSCORE_TRADITIONAL = "boxscoretraditionalv3"
+    BOXSCORE_ADVANCED = "boxscoreadvancedv3"
+    BOXSCORE_SUMMARY = "boxscoresummaryv3"
 
 
 # ---------------------------------------------------------------------------
@@ -119,46 +117,3 @@ class SeasonType(StrEnum):
 
 
 PLAY_IN_FIRST_SEASON: str = "2020_21"
-
-
-# ---------------------------------------------------------------------------
-# V2/V3 endpoint cutover
-# ---------------------------------------------------------------------------
-# stats.nba.com stopped publishing data via boxscoretraditionalv2 and
-# boxscoresummaryv2 as of the 2025-26 season. V3 equivalents exist with
-# different column naming (camelCase, expanded names) but carry the same
-# four-factor inputs. We keep both versions wired and dispatch by season:
-#
-#     1997-98 .. 2024-25 -> V2 (proven historical coverage)
-#     2025-26 ..         -> V3
-#
-# Advanced V2 is not formally deprecated, but we cut over with the others
-# at 2025-26 to keep one boundary instead of three. Both raw schemas land
-# on disk under their own endpoint subdirectory; the processed layer
-# normalizes to a single canonical schema.
-
-V3_CUTOVER_SEASON: str = "2025_26"
-
-_V2_TO_V3: dict[Endpoint, Endpoint] = {
-    Endpoint.BOXSCORE_TRADITIONAL: Endpoint.BOXSCORE_TRADITIONAL_V3,
-    Endpoint.BOXSCORE_ADVANCED: Endpoint.BOXSCORE_ADVANCED_V3,
-    Endpoint.BOXSCORE_SUMMARY: Endpoint.BOXSCORE_SUMMARY_V3,
-}
-
-
-def endpoint_for_season(endpoint: Endpoint, season: str) -> Endpoint:
-    """Resolve a logical endpoint to its concrete V2 or V3 form for `season`.
-
-    Pass the V2 enum member as the logical name; this function returns
-    either the same V2 member (for seasons before V3_CUTOVER_SEASON) or
-    the corresponding V3 member (for V3_CUTOVER_SEASON onward).
-
-    SCHEDULE has no V2/V3 split and is returned unchanged. V3 enum members
-    passed in are returned unchanged so callers that already know they
-    want V3 can be explicit.
-    """
-    if endpoint not in _V2_TO_V3:
-        return endpoint
-    if season >= V3_CUTOVER_SEASON:
-        return _V2_TO_V3[endpoint]
-    return endpoint

@@ -1,14 +1,19 @@
-"""Wrapper for the boxscoretraditionalv2 endpoint.
+"""Wrapper for the boxscoretraditionalv3 endpoint.
 
 Traditional box score: per-player and per-team totals (points, rebounds,
 assists, steals, blocks, turnovers, FG/FT attempts and makes, etc.).
 Source of truth for the four-factors computation (locked, Section 2.4).
 
-Used for seasons 1997-98 through 2024-25. For 2025-26 onward, use
-fetch_box_score_traditional_v3 — V2 stopped being published as of the
-2025-26 season per nba_api's deprecation notice. The cutover is handled
-by config.endpoint_for_season; callers that go through the orchestration
-layer don't need to choose explicitly.
+V3-only design (Session 5 pivot): boxscoretraditionalv2 is dead at the
+API level for all historical seasons, while V3 reaches cleanly back to
+1997-98. The "v3" suffix lives only in the URL string (Endpoint enum
+value); Python identifiers drop the V2/V3 distinction since there is
+no longer a choice to make.
+
+V3 envelope is hierarchical ({boxScoreTraditional: {homeTeam, awayTeam,
+...}, meta: {...}}) with camelCase column names (fieldGoalsMade,
+reboundsOffensive, turnovers). The processed layer flattens this into
+the canonical analysis schema.
 
 Returns the raw parsed JSON payload. The caller is responsible for
 persisting it via storage.raw.raw_game_path / save_raw.
@@ -31,7 +36,7 @@ def fetch_box_score_traditional(
     end_range: str = "0",
     range_type: str = "0",
 ) -> dict[str, Any]:
-    """Fetch boxscoretraditionalv2 for `game_id`.
+    """Fetch boxscoretraditionalv3 for `game_id`.
 
     Range parameters are passed through as strings to match nba_api's
     own defaults. Callers that do not slice by period or range can leave
