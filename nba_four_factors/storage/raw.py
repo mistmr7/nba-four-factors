@@ -25,14 +25,14 @@ from nba_four_factors.config import RAW_DIR, Endpoint, SeasonType
 _CAMEL_BOUNDARY = re.compile(r"(?<=[a-z])(?=[A-Z])")
 
 
-def _season_type_slug(season_type: SeasonType) -> str:
+def season_type_slug(season_type: SeasonType) -> str:
     value = _CAMEL_BOUNDARY.sub("_", season_type.value)
     return value.replace(" ", "_").replace("-", "_").lower()
 
 
 def raw_season_path(endpoint: Endpoint, season: str, season_type: SeasonType) -> Path:
     """Path for season-level endpoint pulls (currently only leaguegamelog)."""
-    return RAW_DIR / endpoint.value / season / f"{_season_type_slug(season_type)}.json"
+    return RAW_DIR / endpoint.value / season / f"{season_type_slug(season_type)}.json"
 
 
 def raw_game_path(endpoint: Endpoint, game_id: str) -> Path:

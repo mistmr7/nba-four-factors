@@ -10,24 +10,24 @@ import pytest
 from nba_four_factors.config import Endpoint, SeasonType
 from nba_four_factors.storage import raw as raw_storage
 from nba_four_factors.storage.raw import (
-    _season_type_slug,
     exists_raw,
     load_raw,
     raw_game_path,
     raw_season_path,
     save_raw,
+    season_type_slug,
 )
 
 
 class TestSeasonTypeSlug:
     def test_regular(self):
-        assert _season_type_slug(SeasonType.REGULAR) == "regular_season"
+        assert season_type_slug(SeasonType.REGULAR) == "regular_season"
 
     def test_playoffs(self):
-        assert _season_type_slug(SeasonType.PLAYOFFS) == "playoffs"
+        assert season_type_slug(SeasonType.PLAYOFFS) == "playoffs"
 
     def test_play_in_camel_case(self):
-        assert _season_type_slug(SeasonType.PLAY_IN) == "play_in"
+        assert season_type_slug(SeasonType.PLAY_IN) == "play_in"
 
 
 class TestRawSeasonPath:
