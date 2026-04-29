@@ -7,6 +7,7 @@ are changes to the contract the rest of the pipeline relies on.
 
 from __future__ import annotations
 
+from datetime import date
 from enum import StrEnum
 from pathlib import Path
 
@@ -117,3 +118,47 @@ class SeasonType(StrEnum):
 
 
 PLAY_IN_FIRST_SEASON: str = "2020_21"
+
+
+def _candidate_season(today: date | None = None) -> str:
+    """The season that should be active by NBA calendar convention."""
+    today = today or date.today()
+    year = today.year
+    start = year if today.month >= 10 else year - 1
+    end_yy = (start + 1) % 100
+    return f"{start}_{end_yy:02d}"
+
+
+def current_season() -> str:
+    """Season currently in progress, else previous one (§12.3).
+
+    A season is "in progress" once at least one regular-season game has
+    been scheduled and saved to disk.  Pure local-file lookup.
+    """
+    from nba_four_factors.storage.raw import (
+        exists_raw,
+        load_raw,
+        raw_season_path,
+    )
+
+    candidate = _candidate_season()
+
+    if candidate not in SEASONS:
+        return SEASONS[-1]
+
+    path = raw_season_path(Endpoint.SCHEDULE, candidate, SeasonType.REGULAR)
+    if not exists_raw(path):
+        idx = SEASONS.index(candidate)
+        return SEASONS[idx - 1] if idx > 0 else candidate
+
+    try:
+        payload = load_raw(path)
+        result_sets = payload.get("resultSets") or payload.get("resultSet") or []
+        rows = result_sets[0]["rowSet"] if result_sets else []
+        if rows:
+            return candidate
+    except Exception:
+        pass
+
+    idx = SEASONS.index(candidate)
+    return SEASONS[idx - 1] if idx > 0 else candidate
