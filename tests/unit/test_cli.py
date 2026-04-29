@@ -185,3 +185,126 @@ def test_invalid_season_type_choice_errors():
 def test_max_consecutive_failures_non_int_errors():
     with pytest.raises(SystemExit):
         cli.main(["backfill", "--max-consecutive-failures", "ten"])
+
+
+def test_process_subcommand_required_arguments():
+    """`process` requires both --season and --season-type."""
+    parser = cli.build_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["process"])
+    with pytest.raises(SystemExit):
+        parser.parse_args(["process", "--season", "2024_25"])
+    with pytest.raises(SystemExit):
+        parser.parse_args(["process", "--season-type", "regular"])
+
+
+def test_process_subcommand_parses_required_arguments():
+    parser = cli.build_parser()
+    args = parser.parse_args(
+        [
+            "process",
+            "--season",
+            "2024_25",
+            "--season-type",
+            "regular",
+        ]
+    )
+    assert args.command == "process"
+    assert args.season == "2024_25"
+    # argparse stores the raw string; translation happens later
+    assert args.season_type == "regular"
+
+
+def test_process_subcommand_invalid_season_type_errors():
+    parser = cli.build_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(
+            [
+                "process",
+                "--season",
+                "2024_25",
+                "--season-type",
+                "preseason",
+            ]
+        )
+
+
+# --------------------------------------------------------------------------- #
+# Enum translation: process passes a SCALAR, not a list
+# --------------------------------------------------------------------------- #
+
+
+def test_translate_args_process_season_type_becomes_single_enum():
+    """process subcommand has a single --season-type, not nargs='+'.
+    _translate_args must produce a scalar enum, not a list."""
+    parser = cli.build_parser()
+    raw = parser.parse_args(
+        [
+            "process",
+            "--season",
+            "2024_25",
+            "--season-type",
+            "playoffs",
+        ]
+    )
+    args = cli._translate_args(raw)
+    assert args.season_type == SeasonType.PLAYOFFS
+    assert not isinstance(args.season_type, list)
+
+
+def test_translate_args_backfill_season_type_still_a_list():
+    """Regression: backfill's --season-type uses nargs='+', should still
+    translate to a list of enums after the polymorphic branch was added."""
+    parser = cli.build_parser()
+    raw = parser.parse_args(["backfill", "--season-type", "regular", "playoffs"])
+    args = cli._translate_args(raw)
+    assert args.season_type == [SeasonType.REGULAR, SeasonType.PLAYOFFS]
+    assert isinstance(args.season_type, list)
+
+
+# --------------------------------------------------------------------------- #
+# main() dispatches to run_process
+# --------------------------------------------------------------------------- #
+
+
+def test_main_dispatches_to_process(monkeypatch):
+    seen = {}
+
+    def fake_process(args):
+        seen["called"] = True
+        seen["season"] = args.season
+        seen["season_type"] = args.season_type
+        return 0
+
+    monkeypatch.setattr("nba_four_factors.cli.run_process", fake_process)
+    monkeypatch.setattr(
+        "nba_four_factors.cli.run_backfill",
+        lambda args: pytest.fail("wrong driver dispatched"),
+    )
+    monkeypatch.setattr(
+        "nba_four_factors.cli.run_incremental",
+        lambda args: pytest.fail("wrong driver dispatched"),
+    )
+
+    rc = cli.main(["process", "--season", "2024_25", "--season-type", "regular"])
+
+    assert rc == 0
+    assert seen["called"] is True
+    assert seen["season"] == "2024_25"
+    # Translated to a SeasonType enum (not a list) by the time the driver sees it
+    assert seen["season_type"] == SeasonType.REGULAR
+
+
+def test_main_propagates_process_exit_code(monkeypatch):
+    """If run_process returns 1 (e.g., raw JSON missing), main returns 1."""
+    monkeypatch.setattr("nba_four_factors.cli.run_process", lambda args: 1)
+    rc = cli.main(
+        [
+            "process",
+            "--season",
+            "2024_25",
+            "--season-type",
+            "regular",
+        ]
+    )
+    assert rc == 1

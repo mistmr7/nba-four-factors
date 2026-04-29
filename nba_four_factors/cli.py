@@ -1,9 +1,10 @@
 """Command-line entry point.
 
-Two top-level subcommands (§8.1):
+Three top-level subcommands:
 
     python -m nba_four_factors.cli backfill ...
     python -m nba_four_factors.cli incremental ...
+    python -m nba_four_factors.cli process ...        # added Session 10
 
 This module is intentionally a thin shim: it parses arguments, maps short CLI
 strings to enum members (§8.2), and dispatches to orchestration drivers.  All
@@ -22,6 +23,7 @@ import sys
 from .config import Endpoint, SeasonType
 from .orchestration.historical import run_backfill
 from .orchestration.incremental import run_incremental
+from .orchestration.process import run_process
 
 # --------------------------------------------------------------------------- #
 # CLI-name → enum mapping (§8.2, §12.2 TODO)
@@ -51,7 +53,7 @@ SEASON_TYPE_CLI_CHOICES: list[str] = list(SEASON_TYPE_CLI_TO_ENUM.keys())
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the top-level argparse parser with the two subcommands.
+    """Build the top-level argparse parser with the three subcommands.
 
     Exposed (rather than constructed inline in ``main``) so tests can call it
     directly without instantiating sys.argv — see §9 test layout note.
@@ -64,6 +66,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     _add_backfill_subparser(subparsers)
     _add_incremental_subparser(subparsers)
+    _add_process_subparser(subparsers)
 
     return parser
 
@@ -140,6 +143,37 @@ def _add_incremental_subparser(subparsers) -> None:
     )
 
 
+def _add_process_subparser(subparsers) -> None:
+    """Register the ``process`` subcommand (Session 10).
+
+    Builds the processed-layer Parquet for one (season, season_type) pair.
+    Single-pair only — bulk processing is a shell loop, per Session 10 §6.
+    No --dry-run (local-disk only, runs in seconds, no API surface to
+    protect against accidental load).
+    """
+    pr = subparsers.add_parser(
+        "process",
+        help="Build processed four-factors Parquet for one (season, season_type).",
+        description=(
+            "Read saved LeagueGameLog JSON and produce a per-(game, team) "
+            "Parquet with Dean Oliver's four factors computed for both team "
+            "and opponent.  Idempotent and deterministic."
+        ),
+    )
+    pr.add_argument(
+        "--season",
+        metavar="YYYY_YY",
+        required=True,
+        help="Single season (e.g. 2024_25).  No range; loop in shell for bulk.",
+    )
+    pr.add_argument(
+        "--season-type",
+        choices=SEASON_TYPE_CLI_CHOICES,
+        required=True,
+        help="One of: regular, play_in, playoffs.",
+    )
+
+
 # --------------------------------------------------------------------------- #
 # Dispatch
 # --------------------------------------------------------------------------- #
@@ -151,11 +185,19 @@ def _translate_args(args: argparse.Namespace) -> argparse.Namespace:
     argparse stores ``choices`` as the raw strings.  The orchestration layer
     works in enums, so we translate here at the boundary — keeps orchestration
     tests free of CLI parsing concerns (§9).
+
+    ``season_type`` is polymorphic across subcommands: ``backfill`` accepts a
+    list (``nargs="+"``); ``process`` accepts a single value.  We dispatch on
+    type to handle both shapes without leaking subcommand awareness into the
+    translator.
     """
     if getattr(args, "endpoint", None) is not None:
         args.endpoint = [ENDPOINT_CLI_TO_ENUM[s] for s in args.endpoint]
     if getattr(args, "season_type", None) is not None:
-        args.season_type = [SEASON_TYPE_CLI_TO_ENUM[s] for s in args.season_type]
+        if isinstance(args.season_type, list):
+            args.season_type = [SEASON_TYPE_CLI_TO_ENUM[s] for s in args.season_type]
+        else:
+            args.season_type = SEASON_TYPE_CLI_TO_ENUM[args.season_type]
     return args
 
 
@@ -176,6 +218,8 @@ def main(argv: list[str] | None = None) -> int:
         return run_backfill(args)
     if args.command == "incremental":
         return run_incremental(args)
+    if args.command == "process":
+        return run_process(args)
 
     # Unreachable: argparse would have errored on an unknown subcommand
     # because ``required=True`` is set on the subparsers.  Defensive only.
