@@ -103,6 +103,7 @@ def _expand_season_range(season_range: tuple[str, str]) -> list[str]:
 def read_processed(
     season_range: tuple[str, str],
     season_type: SeasonType,
+    include_canceled: bool = False,
 ) -> pd.DataFrame:
     """Concatenate per-season processed Parquets in the inclusive range.
 
@@ -114,6 +115,14 @@ def read_processed(
         :data:`nba_four_factors.config.SEASONS`.
     season_type
         Which season-type slice to load. One file per season per type.
+    include_canceled
+        If False (default), exclude rows representing canceled games
+        (where pts == 0 AND opp_pts == 0). NBA games cannot end 0-0;
+        such rows are scheduled-but-canceled games preserved by the
+        nba.com leaguegamelog endpoint. The known instance is the
+        Celtics-Pacers game from April 16, 2013, canceled after the
+        Boston Marathon bombings (game_id 0021201214). See
+        known_anomalies.md.
 
     Returns
     -------
@@ -152,5 +161,21 @@ def read_processed(
             season_type.name,
         )
         return pd.DataFrame(columns=list(_PROCESSED_SCHEMA))
+
+    df = pd.concat(frames, ignore_index=True)
+
+    if not include_canceled:
+        canceled_mask = (df["pts"] == 0) & (df["opp_pts"] == 0)
+        n_canceled = int(canceled_mask.sum())
+        if n_canceled:
+            logger.info(
+                "read_processed: dropping %d canceled-game rows (see known_anomalies.md)",
+                n_canceled,
+            )
+            df = df[~canceled_mask].reset_index(drop=True)
+
+    return df
+
+    return pd.concat(frames, ignore_index=True)
 
     return pd.concat(frames, ignore_index=True)

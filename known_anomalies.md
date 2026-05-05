@@ -31,6 +31,24 @@ Covered span: 1997-98 through 2025-26.
     3-games-in-4-nights; rest-based features will skew for this season
   - Travel/rest logic (REST_CAP=7) still applies but distribution shifts
 
+## Canceled games preserved in schedule data
+
+### 2012_13: BOS vs IND, April 16, 2013 (game_id: 0021201214)
+
+The Boston Celtics home game against the Indiana Pacers was canceled by
+the NBA following the Boston Marathon bombings on April 15, 2013. The
+game was not rescheduled. This is the most recent NBA season with an
+odd number of games played (1,229 actual; 1,230 scheduled).
+
+The nba.com `leaguegamelog` endpoint includes the canceled game in the
+schedule with `pts=0` and `opp_pts=0` for both teams. The processed
+Parquet preserves this representation. Downstream analysis should
+filter rows where `pts == 0 AND opp_pts == 0`.
+
+Sources:
+- https://www.si.com/nba/2013/04/16/boston-marathon-bombing-terror-attack-celtics-pacers-game-cancelled-nba
+- https://www.cbc.ca/sports/basketball/nba/celtics-pacers-game-cancelled-due-to-boston-marathon-bombings-1.1364069
+
 ## COVID-19 disruptions
 
 ### 2019-20 — Bubble season

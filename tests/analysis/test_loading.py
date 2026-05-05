@@ -160,3 +160,50 @@ def test_read_processed_returns_dataframe_not_none(monkeypatch, tmp_path):
     df = read_processed(("2020_21", "2020_21"), SeasonType.REGULAR)
 
     assert isinstance(df, pd.DataFrame)
+
+
+def test_read_processed_drops_canceled_games_by_default(
+    monkeypatch,
+    make_processed_tree,
+    caplog,
+):
+    """Rows with pts == 0 AND opp_pts == 0 are excluded by default."""
+    root = make_processed_tree([("2024_25", SeasonType.REGULAR)], n_games=2)
+    monkeypatch.setattr(_loading, "PROCESSED_DIR", root)
+
+    target = root / "2024_25" / "regular_season.parquet"
+    df = pd.read_parquet(target)
+    df.loc[0:1, "pts"] = 0
+    df.loc[0:1, "opp_pts"] = 0
+    df.to_parquet(target)
+
+    with caplog.at_level(logging.INFO, logger=_loading.__name__):
+        result = read_processed(("2024_25", "2024_25"), SeasonType.REGULAR)
+
+    assert len(result) == 2
+    assert ((result["pts"] == 0) & (result["opp_pts"] == 0)).sum() == 0
+    assert any("canceled-game" in rec.message for rec in caplog.records)
+
+
+def test_read_processed_keeps_canceled_when_requested(
+    monkeypatch,
+    make_processed_tree,
+):
+    """include_canceled=True passes 0-0 rows through unchanged."""
+    root = make_processed_tree([("2024_25", SeasonType.REGULAR)], n_games=2)
+    monkeypatch.setattr(_loading, "PROCESSED_DIR", root)
+
+    target = root / "2024_25" / "regular_season.parquet"
+    df = pd.read_parquet(target)
+    df.loc[0:1, "pts"] = 0
+    df.loc[0:1, "opp_pts"] = 0
+    df.to_parquet(target)
+
+    result = read_processed(
+        ("2024_25", "2024_25"),
+        SeasonType.REGULAR,
+        include_canceled=True,
+    )
+
+    assert len(result) == 4
+    assert ((result["pts"] == 0) & (result["opp_pts"] == 0)).sum() == 2
