@@ -62,8 +62,13 @@ Sources:
 - Pipeline notes:
   - `expected_game_count` is per-team and non-uniform for this season —
     do NOT assume a single league-wide value
-  - All bubble games are neutral-site: `neutral_site=True`,
-    home-court advantage features must be suppressed
+  - All bubble games are neutral-site (Jul 30 - Oct 11, 2020).
+    nba.com schedules them with normal vs./@ MATCHUP fields, so the
+    `is_neutral` flag is enforced by `anomalies.NEUTRAL_SITE_DATE_OVERRIDES`
+    and applied in `processed/schedule.py::_tidy_schedule`. Home-court
+    advantage features should be suppressed for all `is_neutral=True`
+    rows, which now correctly includes the bubble seeding games and
+    the 2019-20 playoffs
   - Travel distance = 0 for all bubble games regardless of
     `METRO_MAP` lookup; REST_CAP still applies
   - First play-in game in league history (Blazers vs. Grizzlies)

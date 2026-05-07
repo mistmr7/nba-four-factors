@@ -243,3 +243,200 @@ def test_tidy_schedule_unrecognised_matchup_pattern_raises(schedule_payload):
 
     with pytest.raises(ValueError, match="unrecognised MATCHUP patterns"):
         _tidy_schedule(payload, season="2024_25", season_type=SeasonType.REGULAR)
+
+
+def test_tidy_schedule_2019_20_bubble_games_flagged_neutral():
+    """2019-20 games inside the Bubble date range (Jul 30 - Oct 11, 2020)
+    are flagged is_neutral=True even when their MATCHUP fields use the
+    normal 'vs.'/'@' pattern. Pre-shutdown 2019-20 games are unaffected.
+
+    See nba_four_factors/anomalies.NEUTRAL_SITE_DATE_OVERRIDES.
+    """
+    payload = {
+        "resultSets": [
+            {
+                "name": "LeagueGameLog",
+                "headers": [
+                    "GAME_ID",
+                    "GAME_DATE",
+                    "TEAM_ID",
+                    "TEAM_ABBREVIATION",
+                    "MATCHUP",
+                    "FGM",
+                    "FGA",
+                    "FG3M",
+                    "FG3A",
+                    "FTM",
+                    "FTA",
+                    "OREB",
+                    "DREB",
+                    "TOV",
+                    "PTS",
+                ],
+                "rowSet": [
+                    [
+                        "0021900900",
+                        "2020-03-01",
+                        1,
+                        "LAL",
+                        "LAL vs. BOS",
+                        40,
+                        85,
+                        10,
+                        30,
+                        15,
+                        20,
+                        10,
+                        33,
+                        14,
+                        110,
+                    ],
+                    [
+                        "0021900900",
+                        "2020-03-01",
+                        2,
+                        "BOS",
+                        "BOS @ LAL",
+                        38,
+                        88,
+                        8,
+                        28,
+                        14,
+                        18,
+                        9,
+                        32,
+                        16,
+                        100,
+                    ],
+                    [
+                        "0021901300",
+                        "2020-08-01",
+                        1,
+                        "LAL",
+                        "LAL vs. UTA",
+                        42,
+                        88,
+                        12,
+                        32,
+                        18,
+                        22,
+                        11,
+                        34,
+                        13,
+                        116,
+                    ],
+                    [
+                        "0021901300",
+                        "2020-08-01",
+                        2,
+                        "UTA",
+                        "UTA @ LAL",
+                        35,
+                        84,
+                        9,
+                        27,
+                        13,
+                        17,
+                        8,
+                        30,
+                        17,
+                        108,
+                    ],
+                ],
+            }
+        ]
+    }
+
+    df = _tidy_schedule(
+        payload,
+        season="2019_20",
+        season_type=SeasonType.REGULAR,
+    )
+
+    pre_shutdown = df[df["game_id"] == "0021900900"]
+    bubble = df[df["game_id"] == "0021901300"]
+
+    assert not pre_shutdown["is_neutral"].any()
+    lal_pre = pre_shutdown[pre_shutdown["team_abbr"] == "LAL"].iloc[0]
+    assert lal_pre["is_home"]
+
+    assert bubble["is_neutral"].all()
+    assert not bubble["is_home"].any()
+
+
+def test_tidy_schedule_non_bubble_seasons_unaffected_by_override():
+    """Seasons outside NEUTRAL_SITE_DATE_OVERRIDES are passed through
+    unchanged by the override step. Sanity check that the override
+    doesn't accidentally fire on games dated within the bubble window
+    but assigned to a different season.
+    """
+    payload = {
+        "resultSets": [
+            {
+                "name": "LeagueGameLog",
+                "headers": [
+                    "GAME_ID",
+                    "GAME_DATE",
+                    "TEAM_ID",
+                    "TEAM_ABBREVIATION",
+                    "MATCHUP",
+                    "FGM",
+                    "FGA",
+                    "FG3M",
+                    "FG3A",
+                    "FTM",
+                    "FTA",
+                    "OREB",
+                    "DREB",
+                    "TOV",
+                    "PTS",
+                ],
+                "rowSet": [
+                    [
+                        "0022000001",
+                        "2020-12-22",
+                        1,
+                        "GSW",
+                        "GSW vs. BKN",
+                        40,
+                        85,
+                        10,
+                        30,
+                        15,
+                        20,
+                        10,
+                        33,
+                        14,
+                        99,
+                    ],
+                    [
+                        "0022000001",
+                        "2020-12-22",
+                        2,
+                        "BKN",
+                        "BKN @ GSW",
+                        45,
+                        90,
+                        14,
+                        35,
+                        18,
+                        22,
+                        9,
+                        32,
+                        16,
+                        125,
+                    ],
+                ],
+            }
+        ]
+    }
+
+    df = _tidy_schedule(
+        payload,
+        season="2020_21",
+        season_type=SeasonType.REGULAR,
+    )
+
+    assert not df["is_neutral"].any()
+    gsw = df[df["team_abbr"] == "GSW"].iloc[0]
+    assert gsw["is_home"]

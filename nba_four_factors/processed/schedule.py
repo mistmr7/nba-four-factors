@@ -30,6 +30,7 @@ from typing import Any
 
 import pandas as pd
 
+from ..anomalies import apply_known_neutral_overrides
 from ..config import Endpoint, SeasonType
 from ..storage.raw import load_raw, raw_season_path
 from ._naming import season_type_to_snake
@@ -205,6 +206,12 @@ def _tidy_schedule(
     #    pyarrow; pure Python ``date`` objects round-trip less reliably.
     #    The column name remains ``game_date`` per spec.
     df["game_date"] = pd.to_datetime(df["game_date"])
+
+    # 7.5 Apply known neutral-site overrides for games where MATCHUP
+    #     fields don't reflect the actual venue. Most prominent case:
+    #     2019-20 Bubble at Disney (Jul 30 - Oct 11, 2020). Registry in
+    #     anomalies.NEUTRAL_SITE_DATE_OVERRIDES; see known_anomalies.md.
+    df = apply_known_neutral_overrides(df, season=season)
 
     # 8. Drop scratch columns and order per schema.
     df = df.drop(columns=["_matchup", "_separator"])
