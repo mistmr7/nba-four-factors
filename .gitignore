@@ -36,3 +36,6 @@ scratch/
 
 # Manifests — regenerable from checkpoints, kept out of source control
 manifests/
+
+# Notebooks
+notebooks/figures/
