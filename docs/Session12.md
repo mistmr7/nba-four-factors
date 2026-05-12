@@ -262,3 +262,86 @@ After `pivots.py` lands:
 These all build on `_loading.py` and `pivots.py`. They're the analytical
 heart of Session 11. With pivots done, the rest is largely well-bounded
 modules of regression-machinery-plus-output-tables.
+
+## Pause point (end of weekend, May 11)
+
+### What shipped this session
+
+1. **Step 2: `pivots.py`** committed. Two pure functions
+   (`pivot_to_game_level`, `aggregate_to_team_season`) plus tests, plus
+   updated public API in `analysis/__init__.py`. Smoke test against real
+   data confirmed expected shapes and `home_win_rate` ≈ 0.55-0.59 across
+   13 seasons (2012_13-2024_25).
+
+2. **Bubble anomaly fix** (Session 12.5 work, done early). 2019_20 Bubble
+   seeding and playoff games (Jul 30 - Oct 11, 2020) were not flagged
+   `is_neutral=True` by the processed pipeline because MATCHUP was scheduled
+   normally. Added `NEUTRAL_SITE_DATE_OVERRIDES` to `anomalies.py` and an
+   `apply_known_neutral_overrides` call in `_tidy_schedule`. Tests added,
+   `known_anomalies.md` updated. Re-processed 2019_20 regular and
+   playoffs. Verified: 176 post-shutdown team-game rows now correctly
+   carry `is_neutral=True`, `is_home=False`.
+
+3. **Historical backfill complete.** Raw data and processed parquets for
+   1997_98 through 2025_26 regular season and playoffs. All three V3
+   box-score endpoints at 100% completeness (`scripts/check_missing_games.py`
+   reports zeros across the board). 68,716+ team-game rows on disk.
+
+4. **EDA notebooks (Day 2 and partial Day 3).**
+   - `notebooks/eda_01_hygiene_and_distributions.py`: data hygiene plus
+     marginal distributions. Three findings: modernization visible in
+     factor trends, single-game margin std rising ~20% over 13 seasons,
+     and end-of-game bimodality in margin distribution explained by
+     intentional-foul mechanics and no-ties rule.
+   - `notebooks/eda_02_hca.py`: per-season HCA. Headline finding:
+     2024_25 mean home margin = 1.69 pts, the lowest non-pandemic value
+     in the (then-13-season) range. Pre-COVID baseline ≈ 2.7 (not 3.0
+     as previously assumed in the field).
+
+### Open work
+
+1. **Re-run `eda_02_hca.py` on the expanded 29-season range.** Just
+   change the `load_processed` season-range argument. The thesis-chapter
+   centerpiece chart goes from 13 dots to 29.
+
+2. **Section 4 rewrite.** The original "close vs blowout HCA in margin
+   units" decomposition is mathematically truncated by the
+   `|margin| <= 10` filter. Replace with **home win RATE in close
+   games**, which is the unbounded metric that actually carries
+   HCA-from-late-game-effects signal. Code patch is in the chat
+   history.
+
+3. **Day 4 sidequest selection.** Top candidates per session plan:
+   §2.10 (3-point revolution decomposition) and §2.8 (officiating's
+   HCA contribution). One sidequest, not two.
+
+4. **Day 5 synthesis.** Update three-bullet summaries in both EDA
+   notebooks. Lightweight writeup. Decide what carries into Session 13
+   regression spec.
+
+### Session 12.5 candidates (post-EDA, pre-Session 13)
+
+- Bump `DEFAULT_TIMEOUT_SECONDS` in `api/client.py` from 30 to 60.
+  Historical V3 box-score calls were slow enough to time out at 30s,
+  producing the long backfill saga. This is a one-line fix.
+- Include exception class/message in the "game fetch failed" WARNING
+  log line. Currently uninformative for debugging.
+- Promote `scripts/fill_gaps.py` patterns into orchestration as a
+  proper `backfill --gap-fill-only` mode, with checkpoint-aware retry
+  of previously-failed game IDs.
+
+### Files added/modified this session
+
+- `nba_four_factors/analysis/pivots.py`
+- `nba_four_factors/analysis/__init__.py`
+- `nba_four_factors/anomalies.py` (Bubble overrides)
+- `nba_four_factors/processed/schedule.py` (anomaly override hook)
+- `tests/analysis/test_pivots.py`
+- `tests/processed/test_schedule.py` (Bubble fix tests)
+- `known_anomalies.md` (Bubble fix documented)
+- `notebooks/eda_01_hygiene_and_distributions.py`
+- `notebooks/eda_02_hca.py`
+- `scripts/check_missing_games.py`
+- `scripts/fill_gaps.py`
+- `data/processed/` (15 new historical season parquets + 2019_20 re-processed + 2025_26)
+- `data/raw/` (15 historical seasons fetched, gaps closed)
