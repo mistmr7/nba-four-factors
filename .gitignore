@@ -40,3 +40,18 @@ manifests/
 # Notebooks
 notebooks/figures/
 docs/
+
+# Overnight ad hoc analyses and reports, not thesis code
+overnight_runs/
+
+# Generated figures, regenerable from notebooks and scripts
+figures/
+
+# Bundles and archives
+*.zip
+
+# Cowork staging folder for files pending deletion
+_to_delete/
+
+# Accidental empty dir from a CLI flag typo
+--dry-run/

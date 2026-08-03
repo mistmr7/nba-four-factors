@@ -71,11 +71,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import PercentFormatter
+from thesis_style import apply_thesis_style
 
 from nba_four_factors.analysis import load_processed, pivot_to_game_level
 from nba_four_factors.config import SeasonType
 
 sns.set_theme(style="whitegrid", context="notebook")
+
+apply_thesis_style()
 FIG_DIR = Path("figures/eda_04")
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -102,6 +105,7 @@ FACTOR_LABELS = {
 
 # %%
 df = load_processed(("1997_98", "2025_26"), SeasonType.REGULAR)
+print(df.columns)
 print(f"long-format shape: {df.shape}")
 print(f"seasons: {df['season'].nunique()}")
 
@@ -462,8 +466,11 @@ print("the long-term inverse coupling.")
 # %% [markdown]
 # ## Section 6: FT rate by season
 #
-# Per-season mean of off_ft_rate (FTA/FGA, the canonical formulation;
-# EDA 02 §2b explored the FTM/FGA alternative).
+# Per-season mean of off_ft_rate (FTA/FGA, the attempt-based
+# formulation, kept deliberately here: era trends in FT rate are an
+# aggression story, which attempts track directly. The study's model
+# factor is makes-based FTM/FGA per the Session 14 head-to-head; the
+# two track at 0.94 and the trend shape is the same in both).
 #
 # Prediction: year-to-year fluctuation, no strong secular trend. This is
 # the null-result section. Confirming "no trend" is still worth doing,

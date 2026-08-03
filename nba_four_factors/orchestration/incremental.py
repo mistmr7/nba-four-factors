@@ -20,6 +20,7 @@ Entry point: :func:`run_incremental`.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 
 from ..api.client import Client, RetriesExhaustedError
@@ -30,10 +31,12 @@ from ..config import (
 )
 from ..storage.checkpoint import (
     initialize_checkpoint,
+    is_schedule_complete,
     load_checkpoint,
     mark_game_complete,
     mark_game_failed,
     mark_schedule_complete,
+    mark_schedule_started,
     pending_games,
     save_checkpoint,
 )
@@ -87,8 +90,21 @@ def run_incremental(args) -> int:
             )
             continue
 
-        mark_schedule_complete(ckpt)  # idempotent if already complete
-        save_checkpoint(season, season_type, ckpt)
+        # The schedule mutators enforce a strict state machine in which
+        # `complete` is terminal, so a blunt mark_schedule_complete crashes on
+        # any season already marked complete by a prior backfill (the common
+        # case). incremental re-fetches the entire schedule each run, so the
+        # schedule is genuinely complete afterward: skip the transition when it
+        # is already complete, and otherwise route through `in_progress` first
+        # so the complete transition is legal. The start call is guarded
+        # because a checkpoint left mid-run is already in progress and cannot
+        # be started again.
+        if not is_schedule_complete(ckpt):
+            # a checkpoint already in progress raises; proceed straight to complete
+            with contextlib.suppress(ValueError):
+                mark_schedule_started(ckpt)
+            mark_schedule_complete(ckpt)
+            save_checkpoint(season, season_type, ckpt)
 
         all_game_ids = load_schedule_game_ids(season, season_type)
         if not all_game_ids:

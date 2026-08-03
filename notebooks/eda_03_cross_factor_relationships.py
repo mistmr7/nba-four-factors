@@ -24,7 +24,7 @@
 #
 # 1. **Cross-block coupling exists and is dominated by 3PA rate.**
 #    Within-team-game off-vs-def factor couplings are nonzero for all
-#    four diagonals (FT +0.175, eFG +0.137, TOV +0.124, ORB +0.092).
+#    four diagonals (FT +0.148, eFG +0.137, TOV +0.124, ORB +0.092).
 #    Joint pace + 3PA controls explain 72% of the eFG coupling and 65%
 #    of ORB, but only 14% of TOV and 20% of FT. The 3-point revolution
 #    is the dominant within-game coupling mechanism; pace is largely
@@ -59,11 +59,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import PercentFormatter
+from thesis_style import apply_thesis_style
 
 from nba_four_factors.analysis import load_processed
 from nba_four_factors.config import SeasonType
 
 sns.set_theme(style="whitegrid", context="notebook")
+
+apply_thesis_style()
 FIG_DIR = Path("figures/eda_03")
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -101,6 +104,24 @@ print(
     f"rows per season range: [{df.groupby('season').size().min()}, {df.groupby('season').size().max()}]"
 )
 
+# %% [markdown]
+# ### FT rate formulation (Session 14 correction)
+#
+# The study's fourth factor is makes-based FTM/FGA, selected by the
+# out-of-sample head-to-head (modeling/cv_vegas.py and
+# docs/Session14_vegas_headtohead.md). All FT-rate columns in this
+# notebook are redefined to makes-based at load, so every matrix,
+# drift panel, and pace test below reflects the factor the models
+# actually use. The processed layer's stored off_ft_rate and
+# def_ft_rate remain attempt-based; this override is local to the
+# analysis. Independence strengthens slightly under the swap: every
+# FT-row correlation shrinks (e.g. TOV vs FT +0.142 to +0.126).
+
+# %%
+df["off_ft_rate"] = df["ftm"] / df["fga"]
+df["def_ft_rate"] = df["opp_ftm"] / df["opp_fga"]
+
+# %%
 seasons_ordered = sorted(df["season"].unique())
 seasons_display = [s.replace("_", "-") for s in seasons_ordered]
 x = np.arange(len(seasons_ordered))
@@ -137,8 +158,8 @@ x = np.arange(len(seasons_ordered))
 # - eFG% vs ORB% at -0.151 is the largest entry. Expected sign,
 #   modest magnitude. Mechanical floor plus 3-point-shooting style
 #   coupling, both pushing negative.
-# - TOV% vs FT rate at +0.142 is the surprise. Same magnitude as eFG
-#   vs ORB, opposite sign. Both factors tag rim-aggression offenses
+# - TOV% vs FT rate at +0.126 is the surprise. Comparable magnitude to
+#   eFG vs ORB, opposite sign. Both factors tag rim-aggression offenses
 #   (drives produce both fouls drawn and turnovers from contested
 #   possessions). Not predicted in advance.
 # - Other four pairs sit in [-0.07, +0.07], noise-tier to weak.
@@ -263,7 +284,7 @@ plt.show()
 #
 # **Results:**
 #
-# - All four cross-block diagonals positive: FT rate (+0.175),
+# - All four cross-block diagonals positive: FT rate (+0.148),
 #   eFG (+0.137), TOV (+0.124), ORB (+0.092). Some per-game scalar
 #   couples both teams' rates symmetrically.
 # - off_efg vs def_tov at -0.146 is the largest off-diagonal cross-pair,
@@ -442,10 +463,12 @@ print(df["poss"].describe().round(2))
 #
 # **Results:**
 #
-# - Three-era structure: dead-ball era start (1997-2003, ~93-96),
-#   grinding era (2003-2012, flat at ~93-95), pace-and-space adoption
-#   (2013-2017, rise to ~97-100), modern fast era (2018-2026, stable
-#   at ~101-103).
+# - Regime structure (as adopted in the thesis, superseding the
+#   earlier four-era labeling): one flat era 1997-98 through 2012-13
+#   (~92-96 possessions, no trend; the old 2003 dead-ball vs grinding
+#   boundary was narrative, not supported by the series), the
+#   pace-and-space climb 2013-14 through 2017-18 (to ~100), and the
+#   modern plateau 2018-19 onward (~101-103).
 # - Biggest single-season jump: 2017-18 (100.15) to 2018-19 (103.10),
 #   a +3 possession step. Coincides with the 14-second shot clock
 #   reset after offensive rebounds (introduced 2018-19) and intensified
@@ -471,10 +494,21 @@ print(pace_by_season.round(2))
 fig, ax = plt.subplots(figsize=(15, 5))
 ax.plot(x, pace_by_season.values, marker="o", markersize=7, linewidth=2.0, color="darkgreen")
 
-for season_key, (_, color) in ERA_MARKERS.items():
+for season_key, (label, color) in ERA_MARKERS.items():
     if season_key in seasons_ordered:
         idx = seasons_ordered.index(season_key)
         ax.axvline(idx, color=color, linestyle="--", linewidth=1, alpha=0.4)
+        ax.text(
+            idx,
+            ax.get_ylim()[1] * 0.99 if "lockout" in label else ax.get_ylim()[1] * 0.93,
+            label,
+            rotation=90,
+            ha="right",
+            va="top",
+            fontsize=8,
+            color=color,
+            alpha=0.7,
+        )
 
 ax.set_xticks(x)
 ax.set_xticklabels(seasons_display, rotation=70, ha="right", fontsize=9)
@@ -509,14 +543,25 @@ plt.show()
 #
 # **Results:**
 #
-# - Sign predictions held for eFG (+) and FT (-). TOV vs pace at
-#   +0.008 is essentially zero, contradicting the "rushed decisions"
-#   prediction; consistent with Mike's TOV cancellation theory (pace
-#   shortens possessions while rushed decisions increase errors, net
-#   effect zero).
-# - ORB vs pace at -0.18 came out clearly negative. Consistent with
-#   high-pace games producing more long misses (transition rushed
-#   shots, more 3PA) that are harder to crash on the offensive glass.
+# - Sign prediction held for eFG (off +0.141, def +0.210 vs per-row
+#   poss). With the makes-based FT rate the FT vs pace coupling is
+#   essentially zero (off -0.029, def +0.027; against game-level pace
+#   it is -0.001), so the negative FT prediction no longer holds; the
+#   attempt-based version was mildly negative. TOV vs pace (off
+#   +0.008, def +0.004) is essentially zero, contradicting the
+#   "rushed decisions" prediction; consistent with Mike's TOV
+#   cancellation theory (pace shortens possessions while rushed
+#   decisions increase errors, net effect zero).
+# - ORB vs pace at -0.18 came out clearly negative. Corrected for the
+#   thesis (litigated July 2026): ORB% is a rate, so miss COUNT cannot
+#   move it; mechanisms must change per-miss recovery or style.
+#   Partialling own 3PA rate shrinks the coupling from -0.197 (vs
+#   opponent possessions) to -0.104, so roughly half is three-point
+#   volume: a larger SHARE of misses are long, and 3-heavy teams crash
+#   less. The -OREB formula artifact is ruled out (correlations vs own
+#   poss / game pace / opp poss agree: -0.182 / -0.194 / -0.197). The
+#   symmetric remainder is a blend of transition style and possession
+#   extension (rebounds lengthen possessions on a shared clock).
 # - Off-def asymmetry in pace correlations: off_efg vs pace = +0.141
 #   but def_efg vs pace = +0.210. Similar 7pp gap for ORB (-0.182 vs
 #   -0.197). Not a bug; pace is computed per team-row, not per game,
@@ -572,7 +617,7 @@ plt.show()
 #
 # **Results (the headline finding of the notebook):**
 #
-# - FT rate diagonal (+0.175, the largest cross-block coupling) has
+# - FT rate diagonal (+0.148, the largest cross-block coupling) has
 #   essentially zero pace shrinkage (-0.25%). Pace is eliminated as
 #   the dominant mechanism for FT-rate cross-coupling.
 # - TOV diagonal (+0.124) has zero pace shrinkage (0.02%). Pace
@@ -740,7 +785,7 @@ plt.show()
 #   decisions increase errors (raises TOV); they cancel. 3PA rate is
 #   only weakly related to this cancellation.
 # - FT cross-coupling: 3PA-rate control might shrink slightly. More
-#   3s means less rim attacking means lower FT rate. But the +0.175
+#   3s means less rim attacking means lower FT rate. But the +0.148
 #   coupling is mostly officiating/behavioral (working hypothesis),
 #   not strategic mix.
 #
@@ -778,7 +823,7 @@ plt.show()
 #   after both pace and 3PA are controlled. Pushes hard toward
 #   behavioral or style-matchup explanations. The 3PA contribution
 #   of 11% is small but non-zero.
-# - FT diagonal: 80% of the +0.175 coupling remains unexplained.
+# - FT diagonal: ~79% of the +0.148 coupling remains unexplained.
 #   Officiating crew and behavioral matching remain the leading
 #   unidentified candidates.
 # - Refined thesis methodology paragraph (replaces the §3c.3 draft):
@@ -992,10 +1037,10 @@ plt.show()
 # **Results:**
 #
 # - **eFG vs FT rate is the cleanest era-level drift in the notebook.**
-#   Monotone decline from +0.06 to +0.09 in 1997-2003 down to -0.02 to
-#   0.00 in 2018-2026. Visually verified at full size in the §5 grid:
+#   Monotone decline from +0.02 to +0.08 in 1997-2003 down to -0.03 to
+#   +0.01 in 2018-2026. Visually verified at full size in the §5 grid:
 #   a slow, persistent, monotone-in-aggregate decoupling (total drop
-#   ~0.11 over 29 seasons, ~0.0038 per year), swamped by noise at any
+#   ~0.05 over 29 seasons, ~0.0017 per year), swamped by noise at any
 #   short timescale but unmistakable across the full series. No
 #   reversion spikes. Unlike eFG vs ORB, this pair has a direction.
 #   The 3-point revolution decoupled the two factors: 1997 era's
@@ -1005,7 +1050,7 @@ plt.show()
 #   zero rather than continuing down: the decoupling appears to have
 #   stalled, not reversed. Too noisy to call, but worth noting against
 #   the midrange-comeback hypothesis. A four-factor regression fit on
-#   1997-2010 data would treat eFG and FT rate as positively coupled;
+#   1997-2010 data would treat eFG and FT rate as mildly positively coupled;
 #   a 2018-2026 fit would treat them as independent.
 # - **eFG vs TOV has a mild recent decline.** Earlier table reading
 #   called this "no monotone trend," and across the full 29 seasons
@@ -1301,3 +1346,5 @@ print("=" * 70)
 # player-driven midrange-comeback subhypothesis). The pooled-vs-
 # within-season distinction from §5/§6 is also flagged there as a
 # standalone methodological-post candidate.
+
+# %%

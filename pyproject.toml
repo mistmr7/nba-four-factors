@@ -51,6 +51,9 @@ select = [
 ]
 ignore = [
     "E501",  # line too long — formatter handles this
+    "RUF001",
+    "RUF002",
+    "RUF003",
 ]
 
 [tool.ruff.format]

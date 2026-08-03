@@ -7,11 +7,27 @@
 # physically plausible values, plus first visual on whether the
 # modernization story is present in the raw data.
 #
-# **Three-bullet summary** (filled in after running):
+# **Three-bullet summary:**
 #
-# 1. _(TBD)_
-# 2. _(TBD)_
-# 3. _(TBD)_
+# 1. Modernization story confirmed and refined. eFG% rose 8pp across 29
+#    seasons (0.479 to 0.547) with sharpest acceleration 2014-2019
+#    (Warriors era). ORB% shows a U-shape: long decline 1997-2021 then
+#    clear reversal 2022-2026 back to ~2010-11 levels. FT rate fell 27%
+#    from 1997 baseline (0.337 to 0.246). TOV% slow gradual decline (no
+#    era inflection).
+# 2. FTA/FGA and FTM/FGA correlate at 0.94 across all 29 seasons with
+#    stable correlation. The ~12% independent variance in FTM/FGA
+#    represents team FT shooting skill, conceptually distinct from
+#    "aggressiveness in drawing fouls". Decision, as corrected in the
+#    2b Results block below: the study uses makes-based FTM/FGA, chosen
+#    by the Session 14 out-of-sample head-to-head over the attempt-based
+#    version initially preferred here. FT rate is bounded in
+#    practice: FTA exceeds FGA only once in 68,716 team-game rows
+#    (Hack-a-Shaq game, Nov 19, 1999).
+# 3. Headline visualization: dual-axis HCA mean vs std by season. "X
+#    shape" emerges post-2010. HCA declining (3.4 to 1.7) while std
+#    rising (12.5 to 16.4). Signal shrinking while noise rises. This is
+#    the centerpiece chart for the thesis introduction.
 
 # %%
 from __future__ import annotations
@@ -24,11 +40,14 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import PercentFormatter
 from scipy import stats
+from thesis_style import apply_thesis_style
 
 from nba_four_factors.analysis import load_processed, pivot_to_game_level
 from nba_four_factors.config import SeasonType
 
 sns.set_theme(style="whitegrid", context="notebook")
+
+apply_thesis_style()
 FIG_DIR = Path("figures/eda_02")
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -65,6 +84,21 @@ season_factor_means = df.groupby("season")[factor_cols].mean().round(4)
 print(season_factor_means)
 
 # %% [markdown]
+# **Results:** All four factors show meaningful era trends across 29
+# seasons. eFG% climbs from 0.479 (1997_98) to 0.547 (2025_26), an
+# 8-percentage-point swing. The climb is gradual 1997-2013, accelerates
+# sharply 2014-2019 (Warriors dynasty era), then continues modest
+# growth post-2020. TOV% drifts down from 0.145 to 0.127 across the
+# era, smallest movement of the four. ORB% shows a striking
+# non-monotonic pattern: gradual decline 1997-2003 from 0.286 toward
+# 0.270, leveling off 2004-2011, fast decline 2012-2021 to 0.220
+# minimum, then clear reversal 2022-2026 back to 0.258 (near 2010_11
+# levels). FT rate falls 27% from 0.337 (1997_98) to 0.246 (2024_25)
+# with a slight uptick to 0.267 in 2025_26. The 2025_26 ORB% and FT
+# rate upticks may reflect tactical shifts post-Thunder/Pacers Finals
+# (crash the offensive glass + accept transition fouls).
+
+# %% [markdown]
 # ## Section 2: Per-season violin distributions
 #
 # Each violin shows the within-season distribution of team-game values.
@@ -72,9 +106,6 @@ print(season_factor_means)
 # drift across 29 seasons.
 
 # %%
-# %%
-
-
 factor_labels = {
     "off_efg_pct": "Effective FG%",
     "off_tov_pct": "Turnover %",
@@ -108,6 +139,22 @@ fig.suptitle(
 plt.tight_layout()
 plt.savefig(FIG_DIR / "01_offensive_factor_violins.png", dpi=150)
 plt.show()
+
+# %% [markdown]
+# **Results:** The violins confirm the per-season means trend visually
+# and add texture. eFG% violins widen in recent years, suggesting the
+# gap between worst and best team-games is growing (by 2025_26 upper
+# whiskers reach 80%, lower 30%). TOV% violins narrow slightly in
+# recent years, indicating more consistent ball security across the
+# league. ORB% violins show the U-shape: high medians 1997-2003 (28-30%),
+# bottoming out 2019-2021, recent climb back to 26%. The lower tails
+# (teams completely abandoning offensive rebounding) were fatter during
+# the decline era; in 2025_26 the bottom tails are tighter, suggesting
+# the league-wide shift back toward crashing the glass. FT rate violins
+# in 2025_26 are much tighter than 1997-2005, meaning teams cluster
+# closer to league average than they used to. Outlier "high FT rate"
+# teams are rarer now.
+
 # %% [markdown]
 # ### 2b: FT Rate using FTM/FGA (alternative formulation)
 #
@@ -119,11 +166,12 @@ plt.show()
 # - **FTM/FGA**: aggressiveness AND FT shooting skill rolled into one
 #   number. What actually contributes to scoring.
 #
-# The processed layer currently stores FTA/FGA (per Session 10 §2.4).
-# For comparison, we compute FTM/FGA here and inspect the trend.
-# If the per-season distributions look qualitatively similar, the
-# choice between the two doesn't materially affect downstream
-# regressions; if they diverge, we should pick consciously.
+# The processed layer stores the FTA/FGA rate column plus raw FTM/FTA
+# counts; the modeling feature layer computes FTM/FGA from the stored
+# makes. For comparison, we compute FTM/FGA here and inspect the trend.
+# Resolution: the choice was made consciously and empirically. The
+# Session 14 out-of-sample head-to-head selected FTM/FGA as the
+# study's fourth factor; see the corrected Results block below.
 
 # %%
 df["off_ftm_rate"] = df["ftm"] / df["fga"].where(df["fga"] != 0)
@@ -165,6 +213,39 @@ plt.show()
 season_means_compare = df.groupby("season")[["off_ft_rate", "off_ftm_rate"]].mean().round(4)
 print("Per-season means: FTA/FGA vs FTM/FGA")
 print(season_means_compare)
+
+# %% [markdown]
+# **Results:** FTA/FGA and FTM/FGA correlate at 0.9415 league-wide
+# across all 29 seasons. Per-season correlations are tightly clustered
+# between 0.929 and 0.946 with no era drift. This means the FT
+# shooting skill component (FTM/FGA - FTA/FGA gap) has roughly
+# constant relative size across all 29 seasons. The two formulations
+# capture distinct concepts: FTA/FGA measures aggressiveness in
+# drawing fouls; FTM/FGA combines aggressiveness with shooting skill.
+# The 0.94 correlation means 88% shared variance, leaving 12% as
+# independent FT shooting skill.
+#
+# Initial decision recorded here: use attempt-based FTA/FGA, on the
+# reasoning that it isolates aggressiveness in drawing fouls, treating
+# FT shooting as a separate finishing skill, so folding shooting skill
+# into the factor blurs what it is meant to isolate. Note the section
+# header above is the accurate attribution: Oliver's original
+# formulation was makes-based FT/FGA, so the initial preference here
+# was a deliberate departure from Oliver, not fidelity to him.
+#
+# CORRECTION (Session 14, supersedes the above): the out-of-sample
+# head-to-head in modeling/cv_vegas.py reversed this decision. On
+# matched games with a validated closing spread, swapping makes-based
+# FTM/FGA in for attempt-based FTA/FGA improved margin MAE (10.144 vs
+# 10.156 for the four-factor models; 10.092 vs 10.105 for the full
+# models) and win log loss (0.6127 vs 0.6134; 0.6097 vs 0.6105),
+# consistently across test seasons. The 12% independent FT shooting
+# skill variance carries predictive signal, so the study uses FTM/FGA
+# as the fourth factor. See docs/Session14_vegas_headtohead.md.
+#
+# The 2025_26 slight uptick is present in both
+# formulations but more pronounced in FTA/FGA, suggesting the increase
+# is driven by aggressiveness, not shooting skill.
 
 # %% [markdown]
 # ### 2c: How often FTA > FGA (and FTM > FGA)?
@@ -243,6 +324,21 @@ ax.legend(loc="upper right")
 plt.tight_layout()
 plt.savefig(FIG_DIR / "02_fta_exceeds_fga_frequency.png", dpi=150)
 plt.show()
+
+# %% [markdown]
+# **Results:** FT rate is bounded in practice despite being unbounded
+# in theory. Across all 68,716 team-game rows across 29 seasons, FTA
+# exceeds FGA exactly once: November 19, 1999, Lakers vs Bulls (LAL 103,
+# CHI 95), where the Lakers attempted 64 free throws against 63 field
+# goals. This is the canonical Hack-a-Shaq game: peak-prime Shaquille
+# O'Neal (career 50% FT shooter, near-automatic from the field) being
+# sent to the line repeatedly by the post-Jordan-retirement Bulls (17-65
+# that year). Lakers shot 43/64 from the line (67%, well below league
+# average, consistent with a Shaq-heavy free throw distribution). FTM
+# > FGA never happens. Practical implication: the four-factor framework
+# treats FT rate as effectively in [0, 1] for all real games, and the
+# theoretical upper bound doesn't constrain the analysis.
+
 # %% [markdown]
 # ## Section 3: Defensive factors mirror check
 #
@@ -261,6 +357,19 @@ for off_col, def_col in zip(factor_cols, def_factor_cols, strict=False):
     diff = (df.groupby("season")[off_col].mean() - df.groupby("season")[def_col].mean()).abs().max()
     status = "OK" if diff < 1e-6 else "PROBLEM"
     print(f"  {off_col} vs {def_col}: max abs diff = {diff:.2e}  [{status}]")
+
+# %% [markdown]
+# **Results:** Mirror check passes cleanly. eFG%, TOV%, and FT rate
+# show exact zero difference (computed from team-side stats only, so
+# the league-wide aggregation is symmetric by construction). ORB% shows
+# 5.55e-17 max difference, which is float64 machine epsilon and arises
+# because ORB% involves a division using opponent-side DREB data
+# (different order of operations in the per-row computation introduces
+# tiny rounding noise that survives at the seventeenth decimal place).
+# Confirms the processed-layer factor computation is symmetric and
+# unbiased. Useful for thesis methodology: the symmetric regression in
+# Session 13.3 assumes mean(off_X) = mean(def_X) league-wide, and this
+# verification provides empirical support.
 
 # %% [markdown]
 # ## Section 4: Margin distribution + Q-Q plot (all seasons pooled)
@@ -299,6 +408,25 @@ axes[1].set_title("Q-Q plot vs normal")
 plt.tight_layout()
 plt.savefig(FIG_DIR / "02_margin_distribution.png", dpi=150)
 plt.show()
+
+# %% [markdown]
+# **Results:** Pooled mean home margin across 29 seasons = 2.77 points.
+# This is the single-number HCA estimate across the full modern era,
+# cleaner than the canonical "3-point" folklore figure that circulates
+# in basketball literature. Pooled home win rate ≈ 0.586 (home team
+# wins about 59% of all games). Bimodality persists at full-era scale:
+# clear peaks around ±5-9 with a notch near zero, exactly the shape
+# predicted by end-of-game foul mechanics (trailing teams intentionally
+# fouling to force misses, leading to widening rather than narrowing
+# margins late) plus the no-ties rule (overtime resolves to a non-zero
+# margin). Right peak is slightly higher than left peak, reflecting
+# HCA shifting the entire distribution rightward. Q-Q plot shows the
+# distribution is approximately normal through roughly ±3σ with
+# mild fat tails beyond that (blowout games more frequent than
+# normal would predict, on both ends). For regression purposes, OLS
+# standard errors will be approximately valid but slightly underestimate
+# prediction-interval coverage at the extremes. Document caveat in
+# methodology section.
 
 # %% [markdown]
 # ## Section 5: Per-season margin std (competitiveness over time)
@@ -347,7 +475,22 @@ ax.set_title("Single-game margin variance by season (1997_98 to 2025_26)")
 plt.tight_layout()
 plt.savefig(FIG_DIR / "03_margin_std_by_season.png", dpi=150)
 plt.show()
-# %%
+
+# %% [markdown]
+# **Results:** Two distinct eras emerge clearly. Era 1 (1997_98 to
+# 2017_18, 21 seasons): std stable around 12-13.7, lowest values
+# 2003_04 (12.03) and 2004_05 (12.26). This contradicts the casual
+# narrative that variance has been rising since the late 90s; it was
+# stable for 21 years. Era 2 (2018_19 to 2025_26, 8 seasons): std
+# drifts upward gradually from 13.7 to 16.4, coinciding with the
+# three-point revolution and pace acceleration.  The 2022_23 anomaly
+# is notable: std drops from 15.3 (2021_22) to 13.7 then rebounds to
+# 15.6 (2023_24). The 2022_23 dip coincides with the take-foul rule
+# introduction (penalty for transition fouls), suggesting stricter
+# officiating reduced blowouts temporarily before tactics adjusted.
+# The 2020_21 jump (no/limited crowds) is a real natural-experiment
+# signal: empty arenas produced genuinely more random outcomes.
+
 # %% [markdown]
 # ### 5b: Mean HCA vs single-game std (dual-axis)
 #
@@ -416,4 +559,24 @@ ax_mean.set_title(
 plt.tight_layout()
 plt.savefig(FIG_DIR / "04_hca_mean_vs_std_dual_axis.png", dpi=150)
 plt.show()
+
+# %% [markdown]
+# **Results:** The two findings are inversely correlated and the visual
+# tells the story compactly. From 1997-98 to 2025-26, HCA mean declines
+# from ~3.4 to ~1.7 while margin std rises from ~12.5 to ~16.4. The
+# crossover begins around 2011 (matching the variance-rise era from §5)
+# and accelerates 2019 onward. Three notable per-season values: 2002_03
+# is the all-time HCA peak (3.88 points); 2020_21 is the all-time HCA
+# trough (0.94 points, the empty-arenas natural experiment); 2024_25
+# is the lowest non-pandemic HCA (1.69) with 2025_26 essentially
+# matching it (1.73). The thesis-chapter framing: "Across 29 seasons,
+# home court advantage in the NBA has declined from roughly 3.4 points
+# (pre-2011 era) to roughly 1.8 points (2023-2026 era), while the
+# variance of single-game margins has simultaneously increased from
+# ~12.5 points std to ~16.4 points std. Home advantage has become both
+# smaller in absolute terms and harder to detect against rising
+# game-to-game noise." This dual-effect framing is substantially
+# stronger than either finding alone and is the centerpiece chart for
+# the thesis introduction.
+
 # %%

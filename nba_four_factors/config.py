@@ -98,6 +98,7 @@ class Endpoint(StrEnum):
     BOXSCORE_TRADITIONAL = "boxscoretraditionalv3"
     BOXSCORE_ADVANCED = "boxscoreadvancedv3"
     BOXSCORE_SUMMARY = "boxscoresummaryv3"
+    PLAYER_AWARDS = "playerawards"
 
 
 # ---------------------------------------------------------------------------

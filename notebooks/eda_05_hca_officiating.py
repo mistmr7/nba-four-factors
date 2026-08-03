@@ -77,11 +77,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import PercentFormatter
+from thesis_style import apply_thesis_style
 
 from nba_four_factors.analysis import load_processed, pivot_to_game_level
 from nba_four_factors.config import SeasonType
 
 sns.set_theme(style="whitegrid", context="notebook")
+
+apply_thesis_style()
 FIG_DIR = Path("figures/eda_05")
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 
