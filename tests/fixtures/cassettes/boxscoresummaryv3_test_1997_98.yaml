@@ -65,10 +65,6 @@ interactions:
       - application/json; charset=utf-8
       Date:
       - Mon, 27 Apr 2026 17:34:38 GMT
-      Set-Cookie:
-      - bm_s=YAAQkGPKF1UGRbudAQAAteUB0AXdO861MP0jzi4kq0cjvo3d0q5DcCdwEofubM46E2vhr7Apx/UcXbuUYykYbQmBA1f4GXYUnU5XvuYPuzgEJlAnMGFRhJOgqC32YP5mGHsAsKqTpdLm9HzLa4iS97mYsx120vIit6WQzPFDtSmsaFFo3Wnswr1jO/4ATINzOYKv+o5IBp1Wd8hH/hGj1JQCHydz54T+R7XCfHqsr9meI4iV4dXb50cHhwk2lWY9g71ZdOe2/sAIuznUclk1oMuaGJ5FkaVaE7OpjhD+SQ1ap4ocX13r4FvlZ6olNIpMhPJnU4k5XjJcxSOjqZnagaYmK586gQxRGJmVQivYjfiDIFQtd22BMc0+WOZyDpfCDWbEHZ6pjwxbBGuLpsZdrZ4RW1ULbr3F7IqudRRjTGSuzJ4GhYKKjMlXdB8MxVD1tsAUNFBCk+9NhWI/eMYdleqIw6ypVO1gMLsK5tuCOXuf7xcDTQ4pBHVat2OP3mN2hO6wNcIwfagefmiG8cGnjyTXd3KP/WX0fuOoCHZE983dDsRm9U1T29/bQEVOMqu94kfLPgega5uGj1SrQSajtMBBIvOg/sUJSZJwCzr7IT5W8cBrmthopzrvKgfmy2VfpfCDKF5IYiPnPMJQ/1PufFU6GgFkTdwt60c1CJK5s5ECeqlwegPOQ5mhNfFmk7Pfmt9xoadyuPbJcdq3segoC7F6GWS7n44WCiVg6vB0uqEvMQ1IV55AhOlXx1iMvNJjkKC+re/Z86kU+U0Y4uVFuaW+Pxh4zB+cSC61PHYD8yG/KGWu0MIZ89naGnkuhm7WAVNj9eEZXJy7KODk9FphYfLFZnZsDa4YfSBv;
-        Domain=.nba.com; Path=/; Expires=Thu, 28 May 2026 17:34:38 GMT; Max-Age=2678400;
-        Secure; HttpOnly
       Strict-Transport-Security:
       - max-age=86400
       Vary:

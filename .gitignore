@@ -55,3 +55,6 @@ _to_delete/
 
 # Accidental empty dir from a CLI flag typo
 --dry-run/
+
+# Job application materials, never public
+job/
