@@ -69,7 +69,7 @@ def fig_alpha_ramp():
     ax.set_xlim(0, 40)
     ax.legend(loc="lower right")
     fig.tight_layout()
-    fig.savefig(OUT / "early_blend_alpha_ramp.png", dpi=150)
+    fig.savefig(OUT / "early_blend_alpha_ramp.png")
     plt.close(fig)
 
 
@@ -103,7 +103,7 @@ def fig_bucket_mae(r: pd.DataFrame):
     ax.legend()
     ax.grid(axis="x", visible=False)
     fig.tight_layout()
-    fig.savefig(OUT / "early_blend_bucket_mae.png", dpi=150)
+    fig.savefig(OUT / "early_blend_bucket_mae.png")
     plt.close(fig)
 
 
@@ -123,7 +123,7 @@ def fig_threshold_sweep(r: pd.DataFrame):
     ax.set_ylabel("overall margin MAE (points)")
     ax.legend()
     fig.tight_layout()
-    fig.savefig(OUT / "early_blend_threshold_sweep.png", dpi=150)
+    fig.savefig(OUT / "early_blend_threshold_sweep.png")
     plt.close(fig)
 
 

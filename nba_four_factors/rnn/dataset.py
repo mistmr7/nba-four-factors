@@ -119,7 +119,9 @@ def build():
     # kept; the seed blend handles their weak signal at prediction time.
     mt[CTX_FEATS] = mt[CTX_FEATS].fillna(0.0)
     mt["wintotal_diff"] = mt["wintotal_diff"].fillna(0.0)
-    # Games played so far (avg of the two teams), for the seed blend alpha=n/(n+k).
+    # Game number including tonight (avg of the two teams), for the seed blend
+    # alpha = n/(n+k): a team's 6th game carries n = 6, so the first post-gate
+    # game blends at 6/13, about 46 percent model weight.
     gp = {}
     for (_t, _s), g in tf.groupby(["team_id", "season"], sort=False):
         for j, gid in enumerate(g["game_id"].to_numpy()):

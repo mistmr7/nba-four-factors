@@ -194,17 +194,24 @@ def evaluate_all(d, cfg=CONFIG, verbose=0):
     # Shrunk recent-form term from the saved form pieces, train-only shrinkage.
     f = d["form"]  # [form_mean, base_comp, form_var, away_form_mean, away_base_comp, away_form_var]
     hfm, hb, hfv, afm, ab, afv = (f[:, i] for i in range(6))
-    fm = np.concatenate([hfm[tr], afm[tr]])
-    fv = np.concatenate([hfv[tr], afv[tr]])
+    # Rows where either team has fewer than five prior games carry zero-FILLED
+    # form pieces; fit shrinkage stats and the regression on real-form rows only
+    # and impute the deviation to a true neutral zero elsewhere (2026-09-08 fix,
+    # mirrors scripts/results_master_table.py).
+    _contam = (hfv == 0) | (afv == 0)
+    _trc = tr & ~_contam
+    fm = np.concatenate([hfm[_trc], afm[_trc]])
+    fv = np.concatenate([hfv[_trc], afv[_trc]])
     n_eff = float(np.clip(np.nanmean(fv) / np.nanvar(fm), 1, W))
     sv = max(np.nanvar(fm) - np.nanmean(fv) / n_eff, 1e-6)
     sdd = (sv / (sv + hfv / n_eff)) * (hfm - hb) - (sv / (sv + afv / n_eff)) * (afm - ab)
+    sdd = np.where(_contam, 0.0, sdd)
     X3 = np.column_stack([ctx, sdd])
     r2 = _lin_fit(ctx[tr], ym[tr])
     reg2_m = _lin_pred(r2, ctx[te])
     reg2_w = _phi(reg2_m, float(np.std(ym[tr] - _lin_pred(r2, ctx[tr]))) + 1e-6)
-    r3 = _lin_fit(X3[tr], ym[tr])
-    sig3 = float(np.std(ym[tr] - _lin_pred(r3, X3[tr]))) + 1e-6
+    r3 = _lin_fit(X3[_trc], ym[_trc])
+    sig3 = float(np.std(ym[_trc] - _lin_pred(r3, X3[_trc]))) + 1e-6
     reg3_m = _lin_pred(r3, X3[te])
     reg3_w = _phi(reg3_m, sig3)
 
