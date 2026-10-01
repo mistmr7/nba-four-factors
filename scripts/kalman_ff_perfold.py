@@ -67,9 +67,7 @@ def main() -> None:
         for q in GRID_Q:
             for r_ in GRID_R:
                 for p0 in GRID_P0:
-                    nll = float(
-                        np.mean([sf.season_nll(g, (q, r_, p0), cal) for g in seasons])
-                    )
+                    nll = float(np.mean([sf.season_nll(g, (q, r_, p0), cal) for g in seasons]))
                     if nll < best_nll:
                         best_nll, best = nll, (q, r_, p0)
 

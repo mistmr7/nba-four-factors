@@ -52,16 +52,18 @@ plt.rcParams.update(
 def main() -> None:
     p = pd.read_csv(CSV)
     fig, ax = plt.subplots(figsize=(6.6, 3.6))
-    ax.plot(p.position, p.weight, "-o", color=BLUE, lw=1.8, ms=4.5,
-            label="learned attention weight")
-    ax.axhline(1.0 / 20.0, color=RED, ls="--", lw=1.2,
-               label="uniform weight (1/20)")
+    ax.plot(
+        p.position, p.weight, "-o", color=BLUE, lw=1.8, ms=4.5, label="learned attention weight"
+    )
+    ax.axhline(1.0 / 20.0, color=RED, ls="--", lw=1.2, label="uniform weight (1/20)")
     new = p.weight.iloc[-1]
     old = p.weight.iloc[0]
-    ax.annotate(f"{new:.3f}", (20, new), textcoords="offset points",
-                xytext=(-2, 7), ha="center", fontsize=9)
-    ax.annotate(f"{old:.3f}", (1, old), textcoords="offset points",
-                xytext=(2, -13), ha="center", fontsize=9)
+    ax.annotate(
+        f"{new:.3f}", (20, new), textcoords="offset points", xytext=(-2, 7), ha="center", fontsize=9
+    )
+    ax.annotate(
+        f"{old:.3f}", (1, old), textcoords="offset points", xytext=(2, -13), ha="center", fontsize=9
+    )
     ax.set_xticks([1, 5, 10, 15, 20])
     ax.set_xlabel("position in the 20-game window (1 = oldest, 20 = most recent)")
     ax.set_ylabel("mean attention weight")

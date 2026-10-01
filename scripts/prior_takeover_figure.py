@@ -54,14 +54,18 @@ BLEND = 9.8332
 
 def main() -> None:
     fig, ax = plt.subplots(figsize=(6.2, 3.6))
-    ax.plot(T, MAE, "-o", color=BLUE, lw=1.8, ms=5.5,
-            label="full takeover at game T")
-    ax.axhline(BLEND, color=RED, ls="--", lw=1.4,
-               label=f"uninterrupted blend ({BLEND:.4f})")
-    for x, y in zip(T, MAE):
+    ax.plot(T, MAE, "-o", color=BLUE, lw=1.8, ms=5.5, label="full takeover at game T")
+    ax.axhline(BLEND, color=RED, ls="--", lw=1.4, label=f"uninterrupted blend ({BLEND:.4f})")
+    for x, y in zip(T, MAE, strict=False):
         off = 6 if y >= BLEND else -15
-        ax.annotate(f"{y:.4f}", (x, y), textcoords="offset points",
-                    xytext=(0, off), ha="center", fontsize=8.5)
+        ax.annotate(
+            f"{y:.4f}",
+            (x, y),
+            textcoords="offset points",
+            xytext=(0, off),
+            ha="center",
+            fontsize=8.5,
+        )
     ax.set_ylim(min(MAE) - 0.006, max(MAE) + 0.006)
     ax.set_xticks(T)
     ax.set_xlabel("takeover point T (average games played)")

@@ -68,8 +68,9 @@ def main() -> None:
             for r_ in GRID_R:
                 for p0 in GRID_P0:
                     p = (q, r_, p0, 1.0)
-                    nll = float(np.mean(
-                        [ss.season_nll(g, p, slope, mean_wt, hca) for g in pre_seasons]))
+                    nll = float(
+                        np.mean([ss.season_nll(g, p, slope, mean_wt, hca) for g in pre_seasons])
+                    )
                     if nll < best_nll:
                         best_nll, best = nll, p
 
@@ -77,19 +78,29 @@ def main() -> None:
         for _, g in m[m["yr"] == ty].groupby("season"):
             g = g.sort_values("game_date")
             pm, pv, z, w = ss.run_season(g, best, slope, mean_wt, hca)
-            rows.append(pd.DataFrame({
-                "game_id": g["game_id"].values, "test_yr": ty,
-                "pred_m": pm, "pred_v": pv, "margin": z, "win": w,
-            }))
+            rows.append(
+                pd.DataFrame(
+                    {
+                        "game_id": g["game_id"].values,
+                        "test_yr": ty,
+                        "pred_m": pm,
+                        "pred_v": pv,
+                        "margin": z,
+                        "win": w,
+                    }
+                )
+            )
         fold = pd.concat(rows, ignore_index=True)
         frames.append(fold)
         pd.concat(frames, ignore_index=True).to_parquet(PRED_PATH, index=False)
-        params_log[str(ty)] = {"Q": best[0], "R": best[1], "P0": best[2],
-                               "nll": round(best_nll, 5)}
+        params_log[str(ty)] = {"Q": best[0], "R": best[1], "P0": best[2], "nll": round(best_nll, 5)}
         PARAM_PATH.write_text(json.dumps(params_log, indent=1))
         mae = float(np.abs(fold.pred_m - fold.margin).mean())
-        print(f"fold {ty}: Q={best[0]} R={best[1]} P0={best[2]} MAE {mae:.3f} "
-              f"[{time.time() - t0:.0f}s]", flush=True)
+        print(
+            f"fold {ty}: Q={best[0]} R={best[1]} P0={best[2]} MAE {mae:.3f} "
+            f"[{time.time() - t0:.0f}s]",
+            flush=True,
+        )
     print("all folds complete")
 
 

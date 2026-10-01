@@ -74,9 +74,7 @@ def main():
                 for p0 in GRID_P0:
                     p = (q, r_, p0, P0_HCA)
                     nll = float(
-                        np.mean(
-                            [ss.season_nll(g, p, slope, mean_wt, hca) for g in pre_seasons]
-                        )
+                        np.mean([ss.season_nll(g, p, slope, mean_wt, hca) for g in pre_seasons])
                     )
                     if nll < best_nll:
                         best_nll, best = nll, p

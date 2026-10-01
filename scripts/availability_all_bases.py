@@ -21,9 +21,15 @@ from nba_four_factors.features.availability_shrunk import player_gmsc, shrunk_di
 from nba_four_factors.player_state.followup import _apply, _fit_beta
 
 FEAT = Path("data/features")
-BASES = [("m0", "M0 (seed)"), ("m2", "M2"), ("m3", "M3"),
-         ("rnn_diff", "RNN-diff"), ("rnn_ff", "RNN-ff"),
-         ("rnn_raw", "RNN-raw"), ("kal_m", "Kalman")]
+BASES = [
+    ("m0", "M0 (seed)"),
+    ("m2", "M2"),
+    ("m3", "M3"),
+    ("rnn_diff", "RNN-diff"),
+    ("rnn_ff", "RNN-ff"),
+    ("rnn_raw", "RNN-raw"),
+    ("kal_m", "Kalman"),
+]
 
 
 def main() -> None:
@@ -35,8 +41,10 @@ def main() -> None:
     t = t.merge(inc, on="game_id", how="left")
     t["gmscs_diff"] = t["gmscs_diff"].fillna(0.0)
     print(f"identical lined rows: {len(t)}")
-    print(f"{'base':11s} {'base MAE':>9s} {'+avail':>8s} {'closed':>7s} "
-          f"{'mean beta':>10s} {'helped':>8s}")
+    print(
+        f"{'base':11s} {'base MAE':>9s} {'+avail':>8s} {'closed':>7s} "
+        f"{'mean beta':>10s} {'helped':>8s}"
+    )
     for base, lbl in BASES:
         tb = t.rename(columns={base: "pred_m"})
         rows, helped, nf, betas = [], 0, 0, []
@@ -57,8 +65,10 @@ def main() -> None:
         k = (d.a0 - d.margin).abs().mean()
         a = (d.a1 - d.margin).abs().mean()
         v = (d.vegas_home_margin - d.margin).abs().mean()
-        print(f"{lbl:11s} {k:9.4f} {a:8.4f} {100 * (k - a) / (k - v):6.1f}% "
-              f"{np.mean(betas):10.3f} {helped:>5d}/{nf}")
+        print(
+            f"{lbl:11s} {k:9.4f} {a:8.4f} {100 * (k - a) / (k - v):6.1f}% "
+            f"{np.mean(betas):10.3f} {helped:>5d}/{nf}"
+        )
 
 
 if __name__ == "__main__":

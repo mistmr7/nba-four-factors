@@ -88,9 +88,7 @@ def main() -> None:
         by_arm.setdefault(arm, []).append(df)
     rnn = None
     for arm, parts in by_arm.items():
-        a = pd.concat(parts, ignore_index=True).rename(
-            columns={"rnn_blend_m": f"rnn_{arm}"}
-        )
+        a = pd.concat(parts, ignore_index=True).rename(columns={"rnn_blend_m": f"rnn_{arm}"})
         rnn = a if rnn is None else rnn.merge(a, on="game_id", how="inner")
 
     lad = ladder_preds()
@@ -103,9 +101,7 @@ def main() -> None:
     ):
         k = pd.read_parquet(path, columns=["game_id", "pred_m"])
         k["gid10"] = k["game_id"].astype(str).str.zfill(10)
-        t = t.merge(
-            k[["gid10", "pred_m"]].rename(columns={"pred_m": name}), on="gid10"
-        )
+        t = t.merge(k[["gid10", "pred_m"]].rename(columns={"pred_m": name}), on="gid10")
 
     lines = pd.read_parquet(FEAT / "vegas_game_lines.parquet")[
         ["game_id", "vegas_home_margin"]
@@ -115,12 +111,20 @@ def main() -> None:
 
     cols = ["m0", "m1", "m2", "m3", "rnn_diff", "rnn_ff", "rnn_raw", "kal_m", "kal_ff"]
     labels = {
-        "m0": "M0 seed", "m1": "M1+seed", "m2": "M2+seed", "m3": "M3+seed",
-        "rnn_diff": "RNN-diff", "rnn_ff": "RNN-ff", "rnn_raw": "RNN-raw",
-        "kal_m": "Kal-Margin", "kal_ff": "Kal-FF",
+        "m0": "M0 seed",
+        "m1": "M1+seed",
+        "m2": "M2+seed",
+        "m3": "M3+seed",
+        "rnn_diff": "RNN-diff",
+        "rnn_ff": "RNN-ff",
+        "rnn_raw": "RNN-raw",
+        "kal_m": "Kal-Margin",
+        "kal_ff": "Kal-FF",
     }
-    print(f"universe: {len(t):,} games, {t.test_yr.nunique()} seasons "
-          f"({t.test_yr.min()}-{t.test_yr.max()})")
+    print(
+        f"universe: {len(t):,} games, {t.test_yr.nunique()} seasons "
+        f"({t.test_yr.min()}-{t.test_yr.max()})"
+    )
 
     print(f"\n{'season':>6s}" + "".join(f"{labels[c]:>11s}" for c in cols) + f"{'Vegas':>11s}")
     for ty, g in t.groupby("test_yr"):

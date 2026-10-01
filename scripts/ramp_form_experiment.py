@@ -23,7 +23,14 @@ import pandas as pd
 
 from nba_four_factors.modeling.features import _add_composite, _team_game_frame
 from scripts.design_gap_experiments import (
-    CTX, FACTORS_FTM, FORM, _fit, _pred, add_form, games_played, load,
+    CTX,
+    FACTORS_FTM,
+    FORM,
+    _fit,
+    _pred,
+    add_form,
+    games_played,
+    load,
 )
 
 REPO = Path(__file__).resolve().parents[1]
@@ -43,11 +50,11 @@ def weighted_forms() -> pd.DataFrame:
         vals = g["composite"].to_numpy()
         gids = g["game_id"].to_numpy()
         for i in range(len(vals)):
-            hist = vals[max(0, i - 20):i]
+            hist = vals[max(0, i - 20) : i]
             if len(hist) < 5:
                 flat = ramp = np.nan
             else:
-                ww = w[-len(hist):]
+                ww = w[-len(hist) :]
                 ramp = float((hist * (ww / ww.sum())).sum())
                 flat = float(hist.mean())
             rows.append((gids[i], int(_t), flat, ramp))
@@ -58,13 +65,13 @@ def main() -> None:
     mt = load()
     wf = weighted_forms()
     home = wf.rename(columns={"flat20": "h_flat", "ramp20": "h_ramp"})
-    away = wf.rename(columns={"team_id": "away_team_id",
-                              "flat20": "a_flat", "ramp20": "a_ramp"})
+    away = wf.rename(columns={"team_id": "away_team_id", "flat20": "a_flat", "ramp20": "a_ramp"})
     mt = mt.merge(home, on=["game_id", "team_id"], how="left")
     mt = mt.merge(away, on=["game_id", "away_team_id"], how="left")
 
-    d = mt.dropna(subset=[*FACTORS_FTM, *CTX, *FORM, "wintotal_diff",
-                          "h_flat", "a_flat", "home_margin"]).copy()
+    d = mt.dropna(
+        subset=[*FACTORS_FTM, *CTX, *FORM, "wintotal_diff", "h_flat", "a_flat", "home_margin"]
+    ).copy()
     d["flat_dev"] = (d.h_flat - d.base_comp) - (d.a_flat - d.away_base_comp)
     d["ramp_dev"] = (d.h_ramp - d.base_comp) - (d.a_ramp - d.away_base_comp)
 
@@ -121,20 +128,23 @@ def main() -> None:
     rp = arms["ramp-20 (RNN weights)"]
     fold_d = np.array([s.mean() - r.mean() for s, r in zip(sh, rp, strict=True)])
     t, p = stats.ttest_1samp(fold_d, 0.0)
-    print(f"\nramp-20 vs shrunk-15, paired by fold: delta {fold_d.mean():+.4f} "
-          f"(positive favors ramp), t = {t:.2f}, p = {p:.4f}, "
-          f"ramp better in {int((fold_d > 0).sum())}/{len(fold_d)} folds")
+    print(
+        f"\nramp-20 vs shrunk-15, paired by fold: delta {fold_d.mean():+.4f} "
+        f"(positive favors ramp), t = {t:.2f}, p = {p:.4f}, "
+        f"ramp better in {int((fold_d > 0).sum())}/{len(fold_d)} folds"
+    )
 
     ramp_all = np.concatenate(rp)
     rnn_all = np.concatenate(refs["master RNN-diff"])
     if len(ramp_all) == len(rnn_all):
         diff = rnn_all - ramp_all
         rng = np.random.default_rng(7)
-        boots = np.array([diff[rng.integers(0, len(diff), len(diff))].mean()
-                          for _ in range(2000)])
+        boots = np.array([diff[rng.integers(0, len(diff), len(diff))].mean() for _ in range(2000)])
         lo, hi = np.percentile(boots, [2.5, 97.5])
-        print(f"ramp-20 vs RNN-diff, game-level bootstrap: delta {diff.mean():+.4f} "
-              f"(positive favors ramp) [95% CI {lo:+.4f}, {hi:+.4f}]")
+        print(
+            f"ramp-20 vs RNN-diff, game-level bootstrap: delta {diff.mean():+.4f} "
+            f"(positive favors ramp) [95% CI {lo:+.4f}, {hi:+.4f}]"
+        )
 
 
 if __name__ == "__main__":

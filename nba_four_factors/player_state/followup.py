@@ -41,9 +41,10 @@ def season_standardize(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     q = out["qualifying"]
     stats = (
-        out[q].groupby("season")["y"].agg(["mean", "std"]).rename(
-            columns={"mean": "s_mean", "std": "s_sd"}
-        )
+        out[q]
+        .groupby("season")["y"]
+        .agg(["mean", "std"])
+        .rename(columns={"mean": "s_mean", "std": "s_sd"})
     )
     out = out.merge(stats, on="season", how="left")
     out["y"] = np.where(q, (out["y"] - out["s_mean"]) / out["s_sd"], np.nan)
@@ -109,8 +110,9 @@ def cmd_a1() -> None:
     diag_var = sum(var[c] for c in comps)
     vec_pred = sum(pred[c] for c in comps)
 
-    base = df[["game_id", "person_id", "season", "yr", "minutes", "status",
-               "game_score_per36"]].copy()
+    base = df[
+        ["game_id", "person_id", "season", "yr", "minutes", "status", "game_score_per36"]
+    ].copy()
     base["y"] = base.game_score_per36.clip(*WINSOR)
     qual = (base.status == "played") & (base.minutes >= MIN_QUALIFYING_MINUTES)
     base = base[qual].sort_values(["person_id", "yr"])
@@ -133,17 +135,23 @@ def cmd_a1() -> None:
 
     def nll(pred_col, var_col):
         return float(
-            np.mean(0.5 * np.log(2 * np.pi * e[var_col]) + 0.5 * (e.y - e[pred_col]) ** 2 / e[var_col])
+            np.mean(
+                0.5 * np.log(2 * np.pi * e[var_col]) + 0.5 * (e.y - e[pred_col]) ** 2 / e[var_col]
+            )
         )
 
     print(f"\nheld-out rows 2018+: {len(e):,}")
     print(f"  scalar               NLL {nll('theta_pred', 'scal_var'):.4f}")
     print(f"  vector diagonal      NLL {nll('vec_pred', 'diag_var'):.4f}")
     print(f"  vector corr-adjusted NLL {nll('vec_pred', 'corr_var'):.4f}")
-    print(f"  mean variance: diagonal {e.diag_var.mean():.2f}  corrected {e.corr_var.mean():.2f}  "
-          f"scalar {e.scal_var.mean():.2f}")
-    print("\nverdict: corrected NLL below scalar means the covariance diagnosis is "
-          "confirmed and a full-covariance fit is justified.")
+    print(
+        f"  mean variance: diagonal {e.diag_var.mean():.2f}  corrected {e.corr_var.mean():.2f}  "
+        f"scalar {e.scal_var.mean():.2f}"
+    )
+    print(
+        "\nverdict: corrected NLL below scalar means the covariance diagnosis is "
+        "confirmed and a full-covariance fit is justified."
+    )
 
 
 def cmd_a4(time_budget: float | None) -> None:
@@ -177,12 +185,10 @@ def cmd_a4(time_budget: float | None) -> None:
             def obj(lp, lam=lam, arrays=arrays, mu=mu):
                 return neg_log_lik(np.concatenate([[np.log(lam)], lp]), *arrays, mu)
 
-            r = minimize(obj, np.log([0.01, 100.0]), method="L-BFGS-B",
-                         options={"maxiter": 100})
+            r = minimize(obj, np.log([0.01, 100.0]), method="L-BFGS-B", options={"maxiter": 100})
             log[comp][key] = float(r.fun)
             A4_LOG.write_text(json.dumps(log, indent=1))
-            print(f"{comp} halflife {h}d: NLL {r.fun:.1f} [{time.time() - t0:.0f}s]",
-                  flush=True)
+            print(f"{comp} halflife {h}d: NLL {r.fun:.1f} [{time.time() - t0:.0f}s]", flush=True)
     print("\nprofiles complete:")
     for comp, prof in log.items():
         hs = sorted(prof, key=lambda k: int(k))
@@ -293,9 +299,7 @@ def cmd_bdiag() -> None:
     smean["next"] = smean["season"].apply(
         lambda s: f"{int(s[:4]) + 1}_{(int(s[:4]) + 1) % 100:02d}"
     )
-    prior = smean[["person_id", "next", "gmsc"]].rename(
-        columns={"next": "season", "gmsc": "prior"}
-    )
+    prior = smean[["person_id", "next", "gmsc"]].rename(columns={"next": "season", "gmsc": "prior"})
     g = logs.groupby(["person_id", "season"])
     cnt = (g.cumcount() + 1).to_numpy()
     cum = g["gmsc"].cumsum().to_numpy() / cnt
@@ -318,8 +322,10 @@ def cmd_bdiag() -> None:
     j["inc_val"] = j["inc_val"].fillna(j["prior"]).fillna(0.0)
     j = j.dropna(subset=["val"])
     r = float(np.corrcoef(j.inc_val, j.val)[0, 1])
-    print(f"valuation correlation, incumbent vs filter, {len(j):,} inactive "
-          f"player-games: r = {r:.4f}")
+    print(
+        f"valuation correlation, incumbent vs filter, {len(j):,} inactive "
+        f"player-games: r = {r:.4f}"
+    )
     j["dis"] = (j.val - j.inc_val).abs()
     names = pd.read_parquet(
         REPO_FEAT / "player_game_logs.parquet", columns=["person_id", "name"]
@@ -381,8 +387,10 @@ def cmd_brun() -> None:
     from scipy import stats
 
     tstat, pval = stats.ttest_1samp(d, 0.0)
-    print(f"\nA1 vs A2 paired across folds: mean delta {d.mean():+.4f} "
-          f"(positive favors filter), t = {tstat:.2f}, p = {pval:.4f}")
+    print(
+        f"\nA1 vs A2 paired across folds: mean delta {d.mean():+.4f} "
+        f"(positive favors filter), t = {tstat:.2f}, p = {pval:.4f}"
+    )
     print(f"folds filter better: {int((d > 0).sum())}/{len(d)}")
 
     te_all = t[(t.test_yr >= 2007)].dropna(subset=["vegas_home_margin"]).copy()
@@ -398,12 +406,12 @@ def cmd_brun() -> None:
     a2_ae = np.concatenate(a2_ae)
     diff = a1_ae - a2_ae
     rng = np.random.default_rng(11)
-    boots = np.array(
-        [diff[rng.integers(0, len(diff), len(diff))].mean() for _ in range(2000)]
-    )
+    boots = np.array([diff[rng.integers(0, len(diff), len(diff))].mean() for _ in range(2000)])
     lo, hi = np.percentile(boots, [2.5, 97.5])
-    print(f"game-level paired bootstrap (n={len(diff):,}): delta MAE "
-          f"{diff.mean():+.4f} [95% {lo:+.4f}, {hi:+.4f}]")
+    print(
+        f"game-level paired bootstrap (n={len(diff):,}): delta MAE "
+        f"{diff.mean():+.4f} [95% {lo:+.4f}, {hi:+.4f}]"
+    )
 
 
 def main() -> None:

@@ -22,26 +22,27 @@ REPO = Path(__file__).resolve().parents[1]
 FEAT = REPO / "data" / "features"
 FIGS = REPO / "figures" / "modeling"
 
-plt.rcParams.update({
-    "font.family": "serif",
-    "font.size": 10,
-    "axes.spines.top": False,
-    "axes.spines.right": False,
-    "axes.grid": True,
-    "grid.alpha": 0.25,
-    "figure.dpi": 300,
-})
+plt.rcParams.update(
+    {
+        "font.family": "serif",
+        "font.size": 10,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "axes.grid": True,
+        "grid.alpha": 0.25,
+        "figure.dpi": 300,
+    }
+)
 
 
 def fig_decile() -> None:
     d = pd.read_csv(FEAT / "avail_512_decile.csv")
     fig, ax = plt.subplots(figsize=(6.5, 4.0))
-    ax.plot(d.dec, d.kalman, marker="o", ms=4, color="#444444",
-            label="Kalman filter (no availability)")
-    ax.plot(d.dec, d.avail, marker="s", ms=4, color="#1f6fb4",
-            label="Kalman + availability")
-    ax.plot(d.dec, d.vegas, marker="^", ms=4, color="#b03a2e",
-            label="Vegas closing line")
+    ax.plot(
+        d.dec, d.kalman, marker="o", ms=4, color="#444444", label="Kalman filter (no availability)"
+    )
+    ax.plot(d.dec, d.avail, marker="s", ms=4, color="#1f6fb4", label="Kalman + availability")
+    ax.plot(d.dec, d.vegas, marker="^", ms=4, color="#b03a2e", label="Vegas closing line")
     ax.set_xticks(range(1, 11))
     ax.set_xlabel("Decile of absence-value imbalance (1 = balanced, 10 = most imbalanced)")
     ax.set_ylabel("Margin MAE (points)")
@@ -62,8 +63,7 @@ def fig_season() -> None:
     ax.text(2006.7, overall + 1.5, f"overall {overall:.0f}%", color="#b03a2e", fontsize=9)
     for lo, hi, y in [(2007, 2012, 5.5), (2013, 2019, 17.3), (2020, 2025, 50.9)]:
         ax.plot([lo - 0.36, hi + 0.36], [y, y], color="#444444", lw=1.2)
-        ax.text((lo + hi) / 2, y + 2.0, f"{y:.0f}%", ha="center", fontsize=9,
-                color="#444444")
+        ax.text((lo + hi) / 2, y + 2.0, f"{y:.0f}%", ha="center", fontsize=9, color="#444444")
     ax.set_xticks(range(2007, 2026, 3))
     ax.set_xlabel("Test season")
     ax.set_ylabel("Share of Kalman-to-Vegas gap closed (%)")

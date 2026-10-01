@@ -214,6 +214,7 @@ class TestEndpoint:
             "BOXSCORE_TRADITIONAL",
             "BOXSCORE_ADVANCED",
             "BOXSCORE_SUMMARY",
+            "PLAYER_AWARDS",
         }
 
     def test_schedule_endpoint_value(self):

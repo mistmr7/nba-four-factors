@@ -35,13 +35,16 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--m3", choices=["v1", "v2"], default="v2")
     a = ap.parse_args()
-    src = ("results_master_table_v1_defective.parquet" if a.m3 == "v1"
-           else "results_master_table.parquet")
+    src = (
+        "results_master_table_v1_defective.parquet"
+        if a.m3 == "v1"
+        else "results_master_table.parquet"
+    )
     t = pd.read_parquet(FEAT / src)
     t = t.dropna(subset=["m0", "m3", "kal_m", "rnn_diff", "rnn_ff", "rnn_raw", "kal_ff"])
 
     d = np.load(FEAT / "rnn_sequences.npz", allow_pickle=True)
-    ngmap = dict(zip(d["game_id"], d["ngames"]))
+    ngmap = dict(zip(d["game_id"], d["ngames"], strict=False))
     t["ng"] = t.game_id.map(ngmap)
 
     kv = pd.read_parquet(FEAT / "kalman_perfold_preds.parquet")[["game_id", "pred_v"]]
@@ -75,17 +78,22 @@ def main() -> None:
 
     print(f"Table 7 arms ({a.m3}), 24 seasons, per-fold means:")
     kalf = np.array(arms["kal"])
-    for name, lbl in [("kal", "Kalman alone"), ("m3", "M3 alone"),
-                      ("avg", "50/50 average"), ("prec", "Precision-weighted"),
-                      ("stack", "Stacked OLS"), ("fas", "Filter as seed")]:
+    for name, lbl in [
+        ("kal", "Kalman alone"),
+        ("m3", "M3 alone"),
+        ("avg", "50/50 average"),
+        ("prec", "Precision-weighted"),
+        ("stack", "Stacked OLS"),
+        ("fas", "Filter as seed"),
+    ]:
         v = np.array(arms[name])
         beats = "-" if name == "kal" else f"{int((v < kalf).sum())}/24"
         print(f"  {lbl:20s} {v.mean():.4f}   seasons > filter: {beats}")
     print(f"  mean precision weight on filter: {np.mean(wlog):.3f}")
-    ekal = np.concatenate([(t[t.test_yr == ty].kal_m - t[t.test_yr == ty].margin)
-                           for ty in years[1:]])
-    em3 = np.concatenate([(t[t.test_yr == ty].m3 - t[t.test_yr == ty].margin)
-                          for ty in years[1:]])
+    ekal = np.concatenate(
+        [(t[t.test_yr == ty].kal_m - t[t.test_yr == ty].margin) for ty in years[1:]]
+    )
+    em3 = np.concatenate([(t[t.test_yr == ty].m3 - t[t.test_yr == ty].margin) for ty in years[1:]])
     print(f"  error correlation kal vs m3: {np.corrcoef(ekal, em3)[0, 1]:.3f}")
 
     # ---- C1 arms, 25 seasons ----
@@ -99,16 +107,20 @@ def main() -> None:
     drop_f = pd.Series(np.abs(drop - t.margin)).groupby(t.test_yr.values).mean()
     kal_f = (t.kal_m - t.margin).abs().groupby(t.test_yr).mean()
     seed_f = (t.m0 - t.margin).abs().groupby(t.test_yr).mean()
-    for lbl, f, e in [("Seed alone", seed_f, np.abs(t.m0 - t.margin)[early].mean()),
-                      ("Production", prod_f, np.abs(prod - t.margin)[early.values].mean()),
-                      ("Drop-in", drop_f, np.abs(drop - t.margin)[early.values].mean()),
-                      ("Kalman alone", kal_f, np.abs(t.kal_m - t.margin)[early].mean())]:
+    for lbl, f, e in [
+        ("Seed alone", seed_f, np.abs(t.m0 - t.margin)[early].mean()),
+        ("Production", prod_f, np.abs(prod - t.margin)[early.values].mean()),
+        ("Drop-in", drop_f, np.abs(drop - t.margin)[early.values].mean()),
+        ("Kalman alone", kal_f, np.abs(t.kal_m - t.margin)[early].mean()),
+    ]:
         beats = f"{int((f.values < kal_f.values).sum())}/25" if lbl != "Kalman alone" else "-"
         print(f"  {lbl:14s} MAE {f.mean():.4f}   early {e:.4f}   seasons > filter: {beats}")
     dp = pd.Series(np.abs(drop - t.margin)).groupby(t.test_yr.values).mean()
     pr = pd.Series(np.abs(prod - t.margin)).groupby(t.test_yr.values).mean()
-    print(f"  drop-in beats production: {int((dp.values < pr.values).sum())}/25, "
-          f"delta {pr.mean() - dp.mean():+.4f}")
+    print(
+        f"  drop-in beats production: {int((dp.values < pr.values).sum())}/25, "
+        f"delta {pr.mean() - dp.mean():+.4f}"
+    )
 
 
 if __name__ == "__main__":

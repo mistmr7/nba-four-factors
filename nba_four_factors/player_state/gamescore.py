@@ -221,7 +221,9 @@ def assemble() -> None:
     df = df.sort_values(["game_date", "game_id", "team_id", "person_id"]).reset_index(drop=True)
     df.to_parquet(TABLE, index=False)
     print(f"\nwrote {TABLE}")
-    print(f"  {len(df):,} rows, {df.game_id.nunique():,} games, seasons {df.season.min()}-{df.season.max()}")
+    print(
+        f"  {len(df):,} rows, {df.game_id.nunique():,} games, seasons {df.season.min()}-{df.season.max()}"
+    )
     print(f"  inactive rows also present in box score (skipped as duplicates): {dup_inactives}")
     print(df.status.value_counts().to_string())
 
@@ -233,8 +235,10 @@ def validate() -> None:
     played = df[df.status == "played"]
     bad_zero = df[(df.status != "played") & df.game_score.notna()]
     bad_null = df[(df.status == "played") & df.game_score.isna()]
-    print(f"null discipline: {len(bad_zero)} non-played rows with a game_score, "
-          f"{len(bad_null)} played rows without one")
+    print(
+        f"null discipline: {len(bad_zero)} non-played rows with a game_score, "
+        f"{len(bad_null)} played rows without one"
+    )
     if len(bad_zero) or len(bad_null):
         failures.append("null discipline")
 
@@ -268,14 +272,18 @@ def validate() -> None:
     both = df[df.status == "played"].merge(
         ina[["game_id", "person_id"]], on=["game_id", "person_id"], how="inner"
     )
-    print(f"\nroster reconciliation: {len(both)} players both played and inactive in the "
-          f"same game (should be ~0, logged not raised)")
+    print(
+        f"\nroster reconciliation: {len(both)} players both played and inactive in the "
+        f"same game (should be ~0, logged not raised)"
+    )
 
     if failures:
         print(f"\nVALIDATION FAILURES: {failures}")
     else:
-        print("\nall checks passed (golden-record check runs separately once "
-              "published values are verified)")
+        print(
+            "\nall checks passed (golden-record check runs separately once "
+            "published values are verified)"
+        )
 
 
 def golden(game_id: str, person_id: int) -> None:
@@ -285,8 +293,20 @@ def golden(game_id: str, person_id: int) -> None:
         print("no such row")
         return
     r = r.iloc[0]
-    print(r[["game_id", "season", "game_date", "minutes", *COMPONENTS,
-             "game_score", "game_score_per36", "status"]].to_string())
+    print(
+        r[
+            [
+                "game_id",
+                "season",
+                "game_date",
+                "minutes",
+                *COMPONENTS,
+                "game_score",
+                "game_score_per36",
+                "status",
+            ]
+        ].to_string()
+    )
 
 
 def main() -> None:

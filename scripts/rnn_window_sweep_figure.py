@@ -59,12 +59,22 @@ def main() -> None:
     for x, y in best.items():
         va, off = ("bottom", 6) if x != 15 else ("bottom", 6)
         ax.annotate(
-            f"{y:.3f}", (x, y), textcoords="offset points", xytext=(0, off),
-            ha="center", va=va, fontsize=9,
+            f"{y:.3f}",
+            (x, y),
+            textcoords="offset points",
+            xytext=(0, off),
+            ha="center",
+            va=va,
+            fontsize=9,
         )
     ax.annotate(
-        "selected", (sel, best[sel]), textcoords="offset points",
-        xytext=(0, -16), ha="center", fontsize=9, color=GRAY,
+        "selected",
+        (sel, best[sel]),
+        textcoords="offset points",
+        xytext=(0, -16),
+        ha="center",
+        fontsize=9,
+        color=GRAY,
     )
     ax.set_xticks(list(best.index))
     ax.set_xlabel("window length L (prior games per team)")

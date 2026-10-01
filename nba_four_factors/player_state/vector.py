@@ -81,8 +81,17 @@ def component_frame() -> pd.DataFrame:
 
 def panel_for(df: pd.DataFrame, comp: str) -> pd.DataFrame:
     p = df[
-        ["game_id", "person_id", "team_id", "season", "season_type",
-         "game_date", "minutes", "status", "yr"]
+        [
+            "game_id",
+            "person_id",
+            "team_id",
+            "season",
+            "season_type",
+            "game_date",
+            "minutes",
+            "status",
+            "yr",
+        ]
     ].copy()
     y = df[f"c36_{comp}"].clip(*COMPONENT_WINSOR[comp])
     q = (df["status"] == "played") & (df["minutes"] >= MIN_QUALIFYING_MINUTES)
@@ -141,17 +150,17 @@ def cmd_evaluate() -> None:
     )
     sp = json.loads((OUT_DIR / "params_scalar.json").read_text())
 
-    base = df[["game_id", "person_id", "season", "yr", "minutes", "status",
-               "game_score_per36"]].copy()
+    base = df[
+        ["game_id", "person_id", "season", "yr", "minutes", "status", "game_score_per36"]
+    ].copy()
     base["y"] = base.game_score_per36.clip(*WINSOR)
     q = (base.status == "played") & (base.minutes >= MIN_QUALIFYING_MINUTES)
     base = base[q].sort_values(["person_id", "yr"])
     base["n_prior"] = base.groupby("person_id").cumcount()
 
-    e = base.merge(keys[["game_id", "person_id", "vec_pred", "vec_var"]],
-                   on=["game_id", "person_id"]).merge(
-        scal, on=["game_id", "person_id"]
-    )
+    e = base.merge(
+        keys[["game_id", "person_id", "vec_pred", "vec_var"]], on=["game_id", "person_id"]
+    ).merge(scal, on=["game_id", "person_id"])
     e["scal_var"] = e.P_pred + sp["c"] / e.minutes
     e = e[(e.yr >= FIRST_HOLDOUT) & (e.n_prior >= MIN_PRIOR)].dropna(
         subset=["vec_pred", "theta_pred", "y"]
@@ -168,10 +177,12 @@ def cmd_evaluate() -> None:
     print(f"{'vector (sum of 5)':>18s} {mae_v:>8.4f} {nll(e.vec_pred, e.vec_var):>9.4f}")
     print(f"\nMAE delta (vector - scalar): {mae_v - mae_s:+.4f}")
     by = e.groupby("yr").apply(
-        lambda x: pd.Series({
-            "s": (x.theta_pred - x.y).abs().mean(),
-            "v": (x.vec_pred - x.y).abs().mean(),
-        }),
+        lambda x: pd.Series(
+            {
+                "s": (x.theta_pred - x.y).abs().mean(),
+                "v": (x.vec_pred - x.y).abs().mean(),
+            }
+        ),
         include_groups=False,
     )
     print(f"seasons vector beats scalar on MAE: {int((by.v < by.s).sum())}/{len(by)}")

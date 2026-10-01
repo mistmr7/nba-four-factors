@@ -13,7 +13,6 @@ Run from repo root:
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -45,15 +44,26 @@ def main() -> None:
     wf = pd.read_parquet(FEAT / "ramp_transplant_forms.parquet")
     cols20 = ["flat20", "attn20"] + [f"geo{h}" for h in HGRID]
     mt = pd.read_parquet(FEAT / "modeling_table.parquet")[
-        ["game_id", "team_id", "away_team_id", "base_comp", "away_base_comp"]]
-    m = mt.merge(wf.rename(columns={c: f"h_{c}" for c in cols20}),
-                 on=["game_id", "team_id"], how="left")
-    m = m.merge(wf.rename(columns={"team_id": "away_team_id",
-                                   **{c: f"a_{c}" for c in cols20}}),
-                on=["game_id", "away_team_id"], how="left")
-    devmap = {c: dict(zip(m.game_id,
-                          (m[f"h_{c}"] - m.base_comp) - (m[f"a_{c}"] - m.away_base_comp)))
-              for c in cols20}
+        ["game_id", "team_id", "away_team_id", "base_comp", "away_base_comp"]
+    ]
+    m = mt.merge(
+        wf.rename(columns={c: f"h_{c}" for c in cols20}), on=["game_id", "team_id"], how="left"
+    )
+    m = m.merge(
+        wf.rename(columns={"team_id": "away_team_id", **{c: f"a_{c}" for c in cols20}}),
+        on=["game_id", "away_team_id"],
+        how="left",
+    )
+    devmap = {
+        c: dict(
+            zip(
+                m.game_id,
+                (m[f"h_{c}"] - m.base_comp) - (m[f"a_{c}"] - m.away_base_comp),
+                strict=False,
+            )
+        )
+        for c in cols20
+    }
     DEV = {c: np.array([devmap[c].get(g, np.nan) for g in gid]) for c in cols20}
 
     master = pd.read_parquet(FEAT / "results_master_table.parquet")
@@ -90,8 +100,12 @@ def main() -> None:
             mae = float(np.abs((1 - alv) * seedv + alv * _pred(c, X[va]) - ym[va]).mean())
             if mae < best:
                 best, best_h = mae, h
-        for name, feat in [("m3 sdd", sdd), ("flat20", DEV["flat20"]),
-                           ("geo", DEV[f"geo{best_h}"]), ("attn", DEV["attn20"])]:
+        for name, feat in [
+            ("m3 sdd", sdd),
+            ("flat20", DEV["flat20"]),
+            ("geo", DEV[f"geo{best_h}"]),
+            ("attn", DEV["attn20"]),
+        ]:
             X = np.column_stack([ctx, feat])
             c = _fit(X[tr], ym[tr])
             arms[name].append(np.abs((1 - al) * seed + al * _pred(c, X[te]) - ym[te]).mean())
@@ -100,17 +114,24 @@ def main() -> None:
         refs["kal"].append(np.abs(sub.kal_m - sub.margin).mean())
         refs["m3pub"].append(np.abs(sub.m3 - sub.margin).mean())
 
-    out = {"published M3": refs["m3pub"], "in-harness sdd baseline": arms["m3 sdd"],
-           "flat-20": arms["flat20"], "geo ramp": arms["geo"],
-           "attention ramp": arms["attn"], "published RNN-diff": refs["rnn"],
-           "published Kalman": refs["kal"]}
+    out = {
+        "published M3": refs["m3pub"],
+        "in-harness sdd baseline": arms["m3 sdd"],
+        "flat-20": arms["flat20"],
+        "geo ramp": arms["geo"],
+        "attention ramp": arms["attn"],
+        "published RNN-diff": refs["rnn"],
+        "published Kalman": refs["kal"],
+    }
     for n, v in out.items():
         print(f"  {n:24s} {np.mean(v):.4f}")
     for a in ["flat20", "geo", "attn"]:
         fd = np.array(arms["m3 sdd"]) - np.array(arms[a])
         t, p = stats.ttest_1samp(fd, 0)
-        print(f"{a:8s} vs sdd: {fd.mean():+.4f}, t={t:.2f}, p={p:.4f}, "
-              f"better {int((fd > 0).sum())}/{len(fd)}")
+        print(
+            f"{a:8s} vs sdd: {fd.mean():+.4f}, t={t:.2f}, p={p:.4f}, "
+            f"better {int((fd > 0).sum())}/{len(fd)}"
+        )
     fd = np.array(refs["rnn"]) - np.array(arms["attn"])
     t, p = stats.ttest_1samp(fd, 0)
     print(f"attn vs RNN: {fd.mean():+.4f}, t={t:.2f}, p={p:.4f}")

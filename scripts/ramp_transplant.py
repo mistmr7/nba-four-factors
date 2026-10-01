@@ -31,7 +31,14 @@ import numpy as np
 import pandas as pd
 
 from scripts.design_gap_experiments import (
-    CTX, FACTORS_FTM, FORM, _fit, _pred, add_form, games_played, load,
+    CTX,
+    FACTORS_FTM,
+    FORM,
+    _fit,
+    _pred,
+    add_form,
+    games_played,
+    load,
 )
 
 REPO = Path(__file__).resolve().parents[1]
@@ -58,7 +65,7 @@ def build_forms() -> pd.DataFrame:
         gids = g["game_id"].to_numpy()
         n = len(vals)
         for i in range(n):
-            hist = vals[max(0, i - L):i]
+            hist = vals[max(0, i - L) : i]
             cols["game_id"].append(gids[i])
             cols["team_id"].append(int(_t))
             if len(hist) < 5:
@@ -90,13 +97,13 @@ def main() -> None:
     mt = load()
     fcols = ["flat20", "attn20"] + [f"geo{h}" for h in HGRID]
     home = wf.rename(columns={c: f"h_{c}" for c in fcols})
-    away = wf.rename(columns={"team_id": "away_team_id",
-                              **{c: f"a_{c}" for c in fcols}})
+    away = wf.rename(columns={"team_id": "away_team_id", **{c: f"a_{c}" for c in fcols}})
     mt = mt.merge(home, on=["game_id", "team_id"], how="left")
     mt = mt.merge(away, on=["game_id", "away_team_id"], how="left")
 
-    d = mt.dropna(subset=[*FACTORS_FTM, *CTX, *FORM, "wintotal_diff",
-                          "h_flat20", "a_flat20", "home_margin"]).copy()
+    d = mt.dropna(
+        subset=[*FACTORS_FTM, *CTX, *FORM, "wintotal_diff", "h_flat20", "a_flat20", "home_margin"]
+    ).copy()
     for c in fcols:
         d[f"dev_{c}"] = (d[f"h_{c}"] - d.base_comp) - (d[f"a_{c}"] - d.away_base_comp)
 
@@ -113,13 +120,16 @@ def main() -> None:
     cols = FACTORS_FTM + CTX
 
     def run_arm(tr, te, ftr, fte, seed_tr, seed_te, al):
-        c = _fit(np.column_stack([tr[cols].to_numpy(), ftr]),
-                 tr.home_margin.to_numpy())
+        c = _fit(np.column_stack([tr[cols].to_numpy(), ftr]), tr.home_margin.to_numpy())
         pred = _pred(c, np.column_stack([te[cols].to_numpy(), fte]))
         return (1 - al) * seed_te + al * pred
 
-    arms = {"shrunk-15": [], "flat-20": [], "geo ramp (per-fold h)": [],
-            "attention ramp (fixed)": []}
+    arms = {
+        "shrunk-15": [],
+        "flat-20": [],
+        "geo ramp (per-fold h)": [],
+        "attention ramp (fixed)": [],
+    }
     refs = {"master M3": [], "master RNN-diff": [], "master Kalman": []}
     chosen_h = []
     seasons = sorted(d.season.unique(), key=lambda s: int(s[:4]))
@@ -139,14 +149,20 @@ def main() -> None:
         val_s = tr_set[-1]
         tr_in = tr[tr.season != val_s]
         va = tr[tr.season == val_s]
-        sc_in = _fit(tr_in.wintotal_diff.to_numpy()[:, None],
-                     tr_in.home_margin.to_numpy())
+        sc_in = _fit(tr_in.wintotal_diff.to_numpy()[:, None], tr_in.home_margin.to_numpy())
         seed_va = _pred(sc_in, va.wintotal_diff.to_numpy()[:, None])
         al_va = va.ngames.to_numpy() / (va.ngames.to_numpy() + K_BLEND)
         best_h, best_mae = None, np.inf
         for h in HGRID:
-            pv = run_arm(tr_in, va, tr_in[f"dev_geo{h}"].to_numpy(),
-                         va[f"dev_geo{h}"].to_numpy(), None, seed_va, al_va)
+            pv = run_arm(
+                tr_in,
+                va,
+                tr_in[f"dev_geo{h}"].to_numpy(),
+                va[f"dev_geo{h}"].to_numpy(),
+                None,
+                seed_va,
+                al_va,
+            )
             mae = float(np.abs(pv - va.home_margin).mean())
             if mae < best_mae:
                 best_mae, best_h = mae, h
@@ -156,18 +172,23 @@ def main() -> None:
         specs = [
             ("shrunk-15", tr_sh, te_sh),
             ("flat-20", tr.dev_flat20.to_numpy(), te.dev_flat20.to_numpy()),
-            ("geo ramp (per-fold h)", tr[f"dev_geo{best_h}"].to_numpy(),
-             te[f"dev_geo{best_h}"].to_numpy()),
-            ("attention ramp (fixed)", tr.dev_attn20.to_numpy(),
-             te.dev_attn20.to_numpy()),
+            (
+                "geo ramp (per-fold h)",
+                tr[f"dev_geo{best_h}"].to_numpy(),
+                te[f"dev_geo{best_h}"].to_numpy(),
+            ),
+            ("attention ramp (fixed)", tr.dev_attn20.to_numpy(), te.dev_attn20.to_numpy()),
         ]
         for name, ftr, fte in specs:
             pred = run_arm(tr, te, ftr, fte, None, seed_te, al)
             arms[name].append(np.abs(pred - te.home_margin.to_numpy()))
 
         mm = mrows[mrows.game_id.isin(set(te.game_id))]
-        for rname, col in [("master M3", "m3"), ("master RNN-diff", "rnn_diff"),
-                           ("master Kalman", "kal_m")]:
+        for rname, col in [
+            ("master M3", "m3"),
+            ("master RNN-diff", "rnn_diff"),
+            ("master Kalman", "kal_m"),
+        ]:
             refs[rname].append(np.abs(mm[col] - mm.margin).to_numpy())
 
     print(f"rows evaluated: {sum(len(a) for a in arms['flat-20']):,}")
@@ -177,23 +198,24 @@ def main() -> None:
 
     from scipy import stats
 
-    for a, b in [("geo ramp (per-fold h)", "shrunk-15"),
-                 ("attention ramp (fixed)", "shrunk-15")]:
-        fd = np.array([y.mean() - x.mean()
-                       for x, y in zip(arms[a], arms[b], strict=True)])
+    for a, b in [("geo ramp (per-fold h)", "shrunk-15"), ("attention ramp (fixed)", "shrunk-15")]:
+        fd = np.array([y.mean() - x.mean() for x, y in zip(arms[a], arms[b], strict=True)])
         t, p = stats.ttest_1samp(fd, 0.0)
-        print(f"{a} vs {b}: fold delta {fd.mean():+.4f} (positive favors first), "
-              f"t = {t:.2f}, p = {p:.4f}, better in {int((fd > 0).sum())}/{len(fd)}")
+        print(
+            f"{a} vs {b}: fold delta {fd.mean():+.4f} (positive favors first), "
+            f"t = {t:.2f}, p = {p:.4f}, better in {int((fd > 0).sum())}/{len(fd)}"
+        )
     for a in ["geo ramp (per-fold h)", "attention ramp (fixed)"]:
         arr = np.concatenate(arms[a])
         rnn = np.concatenate(refs["master RNN-diff"])
         diff = rnn - arr
         rng = np.random.default_rng(7)
-        boots = np.array([diff[rng.integers(0, len(diff), len(diff))].mean()
-                          for _ in range(2000)])
+        boots = np.array([diff[rng.integers(0, len(diff), len(diff))].mean() for _ in range(2000)])
         lo, hi = np.percentile(boots, [2.5, 97.5])
-        print(f"{a} vs RNN-diff: game-level delta {diff.mean():+.4f} "
-              f"(positive favors ramp) [95% CI {lo:+.4f}, {hi:+.4f}]")
+        print(
+            f"{a} vs RNN-diff: game-level delta {diff.mean():+.4f} "
+            f"(positive favors ramp) [95% CI {lo:+.4f}, {hi:+.4f}]"
+        )
 
 
 if __name__ == "__main__":

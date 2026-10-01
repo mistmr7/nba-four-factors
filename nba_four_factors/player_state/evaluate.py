@@ -40,8 +40,15 @@ FIRST_TEST = 2001
 def build_frame() -> pd.DataFrame:
     df = pd.read_parquet(
         TABLE,
-        columns=["game_id", "person_id", "season", "game_date", "minutes", "status",
-                 "game_score_per36"],
+        columns=[
+            "game_id",
+            "person_id",
+            "season",
+            "game_date",
+            "minutes",
+            "status",
+            "game_score_per36",
+        ],
     )
     df["game_date"] = pd.to_datetime(df["game_date"])
     df = df[(df.status == "played") & (df.minutes >= MIN_QUALIFYING_MINUTES)].copy()
@@ -56,7 +63,9 @@ def build_frame() -> pd.DataFrame:
     df["season_td"] = gs.transform(lambda s: s.shift(1).expanding().mean())
     df["n_prior"] = g.transform(lambda s: s.shift(1).expanding().count())
 
-    wf = pd.read_parquet(WF_PRED, columns=["game_id", "person_id", "theta_pred", "P_pred", "minutes"])
+    wf = pd.read_parquet(
+        WF_PRED, columns=["game_id", "person_id", "theta_pred", "P_pred", "minutes"]
+    )
     wf = wf.rename(columns={"minutes": "wf_minutes"})
     df = df.merge(wf, on=["game_id", "person_id"], how="inner")
     df["yr"] = df.season.str[:4].astype(int)
@@ -67,8 +76,10 @@ def report() -> None:
     df = build_frame()
     e = df[(df.yr >= FIRST_TEST) & (df.n_prior >= MIN_PRIOR)].copy()
     e = e.dropna(subset=[f"roll{L}" for L in WINDOWS] + ["career", "theta_pred"])
-    print(f"evaluation rows: {len(e):,} qualifying observations, "
-          f"{e.yr.min()}-{e.yr.max()}, players with >= {MIN_PRIOR} prior games")
+    print(
+        f"evaluation rows: {len(e):,} qualifying observations, "
+        f"{e.yr.min()}-{e.yr.max()}, players with >= {MIN_PRIOR} prior games"
+    )
 
     preds = {"filter theta_pred": "theta_pred"}
     preds.update({f"rolling mean L={L}": f"roll{L}" for L in WINDOWS})
@@ -101,8 +112,10 @@ def report() -> None:
         fm = (s.theta_pred - s.y).abs().mean()
         rm = min((s[f"roll{L}"] - s.y).abs().mean() for L in WINDOWS)
         cm = (s.career - s.y).abs().mean()
-        print(f"  {lo}-{hi}: filter {fm:.4f}  best-roll {rm:.4f}  career {cm:.4f}  "
-              f"delta(filter-roll) {fm-rm:+.4f}")
+        print(
+            f"  {lo}-{hi}: filter {fm:.4f}  best-roll {rm:.4f}  career {cm:.4f}  "
+            f"delta(filter-roll) {fm-rm:+.4f}"
+        )
 
     # Noise floor and skill fraction. An oracle knowing theta exactly still
     # incurs E|eps| = sqrt(2 R_t / pi) under the Gaussian assumption, so the
@@ -115,8 +128,10 @@ def report() -> None:
     mae_20 = float((e.roll20 - e.y).abs().mean())
     skill = (mae_20 - mae_f) / (mae_20 - floor)
     print(f"\nnoise floor (approx): MAE_floor {floor:.4f}")
-    print(f"skill vs rolling-20: ({mae_20:.4f} - {mae_f:.4f}) / ({mae_20:.4f} - "
-          f"{floor:.4f}) = {skill:.1%} of removable error")
+    print(
+        f"skill vs rolling-20: ({mae_20:.4f} - {mae_f:.4f}) / ({mae_20:.4f} - "
+        f"{floor:.4f}) = {skill:.1%} of removable error"
+    )
 
     # Unrestricted table: every observation with at least one prior qualifying
     # appearance. Windows use whatever history exists; the season-to-date mean
@@ -131,8 +146,10 @@ def report() -> None:
     u["mu_fold"] = u.yr.map(mus)
     u["season_td"] = u["season_td"].fillna(u["mu_fold"])
     u = u.dropna(subset=["theta_pred", "career"])
-    print(f"\nunrestricted table: {len(u):,} rows ({len(u) - len(e):,} more than the "
-          f"restricted table)")
+    print(
+        f"\nunrestricted table: {len(u):,} rows ({len(u) - len(e):,} more than the "
+        f"restricted table)"
+    )
     print(f"{'predictor':>22s} {'MAE':>8s}")
     for name, col in preds.items():
         mae = float((u[col] - u.y).abs().mean())

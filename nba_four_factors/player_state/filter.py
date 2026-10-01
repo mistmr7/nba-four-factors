@@ -214,7 +214,16 @@ def run_filter(df: pd.DataFrame, p: dict) -> pd.DataFrame:
         last_day = days[i]
 
     out = df[
-        ["game_id", "person_id", "team_id", "season", "season_type", "game_date", "minutes", "status"]
+        [
+            "game_id",
+            "person_id",
+            "team_id",
+            "season",
+            "season_type",
+            "game_date",
+            "minutes",
+            "status",
+        ]
     ].copy()
     out["theta_pred"] = theta_pred
     out["P_pred"] = P_pred
@@ -286,9 +295,7 @@ def cmd_run() -> None:
             "innovation",
         ]
     ].to_parquet(PRED, index=False)
-    out[
-        ["game_id", "person_id", "game_date", "theta_filt", "P_filt"]
-    ].to_parquet(DESC, index=False)
+    out[["game_id", "person_id", "game_date", "theta_filt", "P_filt"]].to_parquet(DESC, index=False)
     print(f"wrote {PRED} ({len(out):,} rows)")
     print(f"wrote {DESC} (descriptive; never join into model inputs)")
 
@@ -332,8 +339,7 @@ def cmd_walkforward(first_test: int = 2001, time_budget: float | None = None) ->
             ]
         ].to_parquet(part, index=False)
         log[str(ty)] = {
-            k: p[k]
-            for k in ("lam", "sigma2", "c", "mu", "halflife_days", "stationary_sd")
+            k: p[k] for k in ("lam", "sigma2", "c", "mu", "halflife_days", "stationary_sd")
         }
         logf.write_text(json.dumps(log, indent=1))
         print(

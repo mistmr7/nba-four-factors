@@ -39,9 +39,7 @@ def simulate_panel(n_players=250, n_seasons=6, games_per_season=70, p_miss=0.15)
                 day += float(RNG.integers(1, 4))
                 dt = day - prev_day
                 phi = np.exp(-lam * dt)
-                theta = mu + phi * (theta - mu) + RNG.normal(
-                    0, np.sqrt(stat * (1 - phi * phi))
-                )
+                theta = mu + phi * (theta - mu) + RNG.normal(0, np.sqrt(stat * (1 - phi * phi)))
                 prev_day = day
                 if RNG.random() < p_miss:
                     rows.append((pid, base + pd.Timedelta(days=day), 0.0, np.nan, False))
@@ -49,9 +47,7 @@ def simulate_panel(n_players=250, n_seasons=6, games_per_season=70, p_miss=0.15)
                 minutes = float(RNG.uniform(8, 40))
                 y = theta + RNG.normal(0, np.sqrt(c / minutes))
                 rows.append((pid, base + pd.Timedelta(days=day), minutes, y, True))
-    df = pd.DataFrame(
-        rows, columns=["person_id", "game_date", "minutes", "y", "qualifying"]
-    )
+    df = pd.DataFrame(rows, columns=["person_id", "game_date", "minutes", "y", "qualifying"])
     df["game_id"] = np.arange(len(df)).astype(str)
     df["team_id"] = 0
     df["season"] = "2010_11"
@@ -77,13 +73,9 @@ def test_synthetic_parameter_recovery(panel):
 
 def test_likelihood_prefers_truth_over_perturbed(panel):
     args = (*obs_arrays(panel), TRUE["mu"])
-    at_truth = neg_log_lik(
-        np.log([TRUE["lam"], TRUE["sigma2"], TRUE["c"]]), *args
-    )
+    at_truth = neg_log_lik(np.log([TRUE["lam"], TRUE["sigma2"], TRUE["c"]]), *args)
     for factor in (0.2, 5.0):
-        off = neg_log_lik(
-            np.log([TRUE["lam"] * factor, TRUE["sigma2"], TRUE["c"]]), *args
-        )
+        off = neg_log_lik(np.log([TRUE["lam"] * factor, TRUE["sigma2"], TRUE["c"]]), *args)
         assert off > at_truth
 
 
@@ -153,4 +145,3 @@ def test_absence_reverts_toward_mu_and_grows_P():
     on_return = out.theta_pred.iloc[20]
     assert abs(on_return - TRUE["mu"]) < abs(before - TRUE["mu"])
     assert out.P_pred.iloc[20] > out.P_pred.iloc[19]
-

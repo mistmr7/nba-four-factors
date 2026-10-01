@@ -31,8 +31,7 @@ W = 15
 FACTORS_FTM = ["d_efg_d", "d_oreb_d", "d_tov_d", "d_ftmfga_d"]
 FACTORS_FTA = ["d_efg_d", "d_oreb_d", "d_tov_d", "d_ftr_d"]
 CTX = ["rest_diff", "b2b_diff", "miles7d_diff"]
-FORM = ["form_mean", "base_comp", "form_var",
-        "away_form_mean", "away_base_comp", "away_form_var"]
+FORM = ["form_mean", "base_comp", "form_var", "away_form_mean", "away_base_comp", "away_form_var"]
 
 
 def _fit(X, y, w=None):
@@ -78,12 +77,13 @@ def exp_ft(mt):
     arms = {"FTM/FGA (chosen)": [], "FTA/FGA": [], "both together": []}
     for tr_set, te_s in folds(d):
         tr, te = d[d.season.isin(tr_set)], d[d.season == te_s]
-        for name, X in [("FTM/FGA (chosen)", FACTORS_FTM),
-                        ("FTA/FGA", FACTORS_FTA),
-                        ("both together", cols)]:
+        for name, X in [
+            ("FTM/FGA (chosen)", FACTORS_FTM),
+            ("FTA/FGA", FACTORS_FTA),
+            ("both together", cols),
+        ]:
             c = _fit(tr[X].to_numpy(), tr.home_margin.to_numpy())
-            arms[name].append(
-                float(np.abs(_pred(c, te[X].to_numpy()) - te.home_margin).mean()))
+            arms[name].append(float(np.abs(_pred(c, te[X].to_numpy()) - te.home_margin).mean()))
     report("Fourth-factor definition (M1 form)", arms, "FTM/FGA (chosen)")
 
 
@@ -113,11 +113,12 @@ def exp_form(mt):
         y_tr, y_te = tr.home_margin.to_numpy(), te.home_margin.to_numpy()
         c = _fit(Xb_tr, y_tr)
         arms["no form (M2)"].append(float(np.abs(_pred(c, Xb_te) - y_te).mean()))
-        for name, ftr, fte in [("raw deviation", tr_r, te_r),
-                               ("shrunk deviation (M3)", tr_s, te_s_)]:
+        for name, ftr, fte in [
+            ("raw deviation", tr_r, te_r),
+            ("shrunk deviation (M3)", tr_s, te_s_),
+        ]:
             c = _fit(np.column_stack([Xb_tr, ftr]), y_tr)
-            arms[name].append(
-                float(np.abs(_pred(c, np.column_stack([Xb_te, fte])) - y_te).mean()))
+            arms[name].append(float(np.abs(_pred(c, np.column_stack([Xb_te, fte])) - y_te).mean()))
     report("Recent-form reliability", arms, "shrunk deviation (M3)")
 
 
@@ -126,20 +127,24 @@ def exp_pace(mt):
     arms = {"without pace (M2, chosen)": [], "with pace_diff": []}
     for tr_set, te_s in folds(d):
         tr, te = d[d.season.isin(tr_set)], d[d.season == te_s]
-        for name, X in [("without pace (M2, chosen)", FACTORS_FTM + CTX),
-                        ("with pace_diff", FACTORS_FTM + CTX + ["pace_diff"])]:
+        for name, X in [
+            ("without pace (M2, chosen)", FACTORS_FTM + CTX),
+            ("with pace_diff", FACTORS_FTM + CTX + ["pace_diff"]),
+        ]:
             c = _fit(tr[X].to_numpy(), tr.home_margin.to_numpy())
-            arms[name].append(
-                float(np.abs(_pred(c, te[X].to_numpy()) - te.home_margin).mean()))
+            arms[name].append(float(np.abs(_pred(c, te[X].to_numpy()) - te.home_margin).mean()))
     report("Pace differential as a feature", arms, "without pace (M2, chosen)")
 
 
 def exp_era(mt):
     d = mt.dropna(subset=[*FACTORS_FTM, *CTX, *FORM, "home_margin"])
     cols = FACTORS_FTM + CTX
-    arms = {"pooled (chosen)": [], "trailing 10 seasons": [],
-            "recency-weighted (5-season half-life)": [],
-            "post-2013 interaction": []}
+    arms = {
+        "pooled (chosen)": [],
+        "trailing 10 seasons": [],
+        "recency-weighted (5-season half-life)": [],
+        "post-2013 interaction": [],
+    }
     for tr_set, te_s in folds(d):
         tr, te = d[d.season.isin(tr_set)], d[d.season == te_s]
         (tr_s, _), (te_s_, _) = add_form(tr, te)
@@ -159,7 +164,8 @@ def exp_era(mt):
         wts = 0.5 ** ((te_yr - tr.yr.to_numpy()) / 5.0)
         c = _fit(X_tr, y_tr, w=wts)
         arms["recency-weighted (5-season half-life)"].append(
-            float(np.abs(_pred(c, X_te) - y_te).mean()))
+            float(np.abs(_pred(c, X_te) - y_te).mean())
+        )
 
         mod_tr = (tr.yr >= 2013).to_numpy().astype(float)[:, None]
         mod_te = (te.yr >= 2013).to_numpy().astype(float)[:, None]
@@ -176,17 +182,21 @@ def games_played() -> dict:
     folds as every other experiment rather than inheriting the RNN
     universe's window."""
     df = pd.concat(
-        [pd.read_parquet(f, columns=["game_id", "team_id", "season",
-                                     "game_date", "is_neutral"])
-         for f in sorted(glob.glob(str(REPO / "data" / "processed" / "*" / "regular_season.parquet")))],
+        [
+            pd.read_parquet(f, columns=["game_id", "team_id", "season", "game_date", "is_neutral"])
+            for f in sorted(
+                glob.glob(str(REPO / "data" / "processed" / "*" / "regular_season.parquet"))
+            )
+        ],
         ignore_index=True,
     )
     df = df[~df.is_neutral].copy()
     df["game_date"] = pd.to_datetime(df.game_date)
     df = df.sort_values(["team_id", "season", "game_date"])
     df["gn"] = df.groupby(["team_id", "season"]).cumcount() + 1
-    return {(g, int(t)): int(n)
-            for g, t, n in df[["game_id", "team_id", "gn"]].itertuples(index=False)}
+    return {
+        (g, int(t)): int(n) for g, t, n in df[["game_id", "team_id", "gn"]].itertuples(index=False)
+    }
 
 
 def exp_decay(mt):
@@ -199,8 +209,12 @@ def exp_decay(mt):
     d = d.dropna(subset=["ngames"])
     cols = FACTORS_FTM + CTX
     K = 7.0
-    arms = {"alpha = n/(n+7) (chosen)": [], "faster forgetting (k=3.5)": [],
-            "slower forgetting (k=14)": [], "divergence-triggered discount": []}
+    arms = {
+        "alpha = n/(n+7) (chosen)": [],
+        "faster forgetting (k=3.5)": [],
+        "slower forgetting (k=14)": [],
+        "divergence-triggered discount": [],
+    }
     for tr_set, te_s in folds(d):
         tr, te = d[d.season.isin(tr_set)], d[d.season == te_s]
         (tr_s, _), (te_s_, _) = add_form(tr, te)
@@ -212,16 +226,19 @@ def exp_decay(mt):
         sc = _fit(tr.wintotal_diff.to_numpy()[:, None], y_tr)
         seed = _pred(sc, te.wintotal_diff.to_numpy()[:, None])
         n = te.ngames.to_numpy()
-        for name, k in [("alpha = n/(n+7) (chosen)", K),
-                        ("faster forgetting (k=3.5)", K / 2),
-                        ("slower forgetting (k=14)", K * 2)]:
+        for name, k in [
+            ("alpha = n/(n+7) (chosen)", K),
+            ("faster forgetting (k=3.5)", K / 2),
+            ("slower forgetting (k=14)", K * 2),
+        ]:
             al = n / (n + k)
             arms[name].append(float(np.abs((1 - al) * seed + al * m3 - y_te).mean()))
         al = n / (n + K)
         div = np.abs(m3 - seed) > 6.0
         al_adj = np.where(div, n / (n + K / 2), al)
         arms["divergence-triggered discount"].append(
-            float(np.abs((1 - al_adj) * seed + al_adj * m3 - y_te).mean()))
+            float(np.abs((1 - al_adj) * seed + al_adj * m3 - y_te).mean())
+        )
     report("Prior decay in the production blend", arms, "alpha = n/(n+7) (chosen)")
 
 

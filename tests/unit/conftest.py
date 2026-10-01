@@ -38,7 +38,7 @@ _BOX_SCORE_ENDPOINTS = (
 
 def make_ckpt(
     *,
-    schedule_status: str = "pending",
+    schedule_status: str = "not_started",
     completed: dict[Endpoint, set[str] | list[str]] | None = None,
     failed: dict[Endpoint, set[str] | list[str]] | None = None,
 ) -> dict:
@@ -97,7 +97,7 @@ class FakeStorage:
     #   ckpt = {
     #     "season": str,
     #     "season_type": SeasonType,
-    #     "schedule":   {"endpoint": str, "status": "pending"|"started"|"complete"|"failed", ...},
+    #     "schedule":   {"endpoint": str, "status": "not_started"|"in_progress"|"complete"|"failed", ...},
     #     "box_scores": {
     #       "<endpoint url string>": {"completed": list[str], "failed": list[str], ...}
     #     }
@@ -113,7 +113,7 @@ class FakeStorage:
         return {
             "season": season,
             "season_type": season_type,
-            "schedule": {"status": "pending"},
+            "schedule": {"status": "not_started"},
             "box_scores": {e.value: {"completed": [], "failed": []} for e in _BOX_SCORE_ENDPOINTS},
         }
 
