@@ -153,7 +153,7 @@ def _fetch(client: Client, endpoint: str, params: dict) -> dict | None:
     return None
 
 
-def pull_game_endpoint(client: Client, endpoint: str, budget: list[int]) -> None:
+def pull_game_endpoint(client: Client, endpoint: str, budget: list[int], sample: int = 0) -> None:
     start, extra = GAME_ENDPOINTS[endpoint]
     out_dir = RAW / endpoint
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -163,6 +163,11 @@ def pull_game_endpoint(client: Client, endpoint: str, budget: list[int]) -> None
         prior_failed = set(ck["failed"])
         ck["failed"] = []
         todo = [g for g in _game_ids(season) if g not in done]
+        if sample:
+            import random
+
+            rng = random.Random(f"{endpoint}_{season}")
+            todo = rng.sample(todo, min(sample, len(todo)))
         if not todo:
             continue
         n_ok = n_fail = 0
@@ -185,6 +190,11 @@ def pull_game_endpoint(client: Client, endpoint: str, budget: list[int]) -> None
                 n_ok += 1
             if (n_ok + n_fail) % 200 == 0:
                 _save_ckpt(endpoint, season, ck)
+            if (n_ok + n_fail) % 100 == 0:
+                print(
+                    f"  {endpoint} {season}: {n_ok + n_fail}/{len(todo)} " f"({n_fail} failed)",
+                    flush=True,
+                )
         _save_ckpt(endpoint, season, ck)
         retried = len(prior_failed & set(ck["completed"]))
         print(
@@ -243,13 +253,15 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--endpoint", required=True, choices=[*GAME_ENDPOINTS, "dashboards"])
     ap.add_argument("--max-requests", type=int, default=100_000)
+    ap.add_argument("--sample", type=int, default=0)
     args = ap.parse_args()
-    client = Client()
+    impatient = args.endpoint == "gamerotation"
+    client = Client(max_attempts=2) if impatient else Client()
     budget = [args.max_requests]
     if args.endpoint == "dashboards":
         pull_dashboards(client, budget)
     else:
-        pull_game_endpoint(client, args.endpoint, budget)
+        pull_game_endpoint(client, args.endpoint, budget, sample=args.sample)
     print(f"done; {budget[0]} of {args.max_requests} requests unused")
 
 

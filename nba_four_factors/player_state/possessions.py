@@ -85,16 +85,16 @@ def _is_heave(row, elapsed: float) -> bool:
 
 class _Possession:
     __slots__ = (
+        "chance",
+        "end_e",
+        "end_type",
+        "events",
+        "flags",
         "off_team",
         "period",
-        "start_e",
-        "end_e",
-        "events",
         "points",
-        "chance",
+        "start_e",
         "start_type",
-        "end_type",
-        "flags",
     )
 
     def __init__(self, off_team: int, period: int, start_e: float, start_type: str):
@@ -169,6 +169,27 @@ def _parse_game(g: pd.DataFrame, home_id: int, away_id: int) -> tuple[list[dict]
         at = _s(r.actionType)
         period = int(r.period)
         e = _elapsed(r.clock, period)
+
+        if at == "":
+            desc = _s(r.description)
+            if "STEAL" in desc:
+                holder = (
+                    cur.events if cur is not None else (poss_out[-1]["events"] if poss_out else [])
+                )
+                for ev in reversed(holder):
+                    if ev["t"] == "tov":
+                        ev["stl"] = int(r.personId) if pd.notna(r.personId) else None
+                        break
+            elif "BLOCK" in desc:
+                holder = (
+                    cur.events if cur is not None else (poss_out[-1]["events"] if poss_out else [])
+                )
+                for ev in reversed(holder):
+                    if ev["t"] == "shot" and not ev.get("made"):
+                        ev["blk"] = int(r.personId) if pd.notna(r.personId) else None
+                        break
+            i += 1
+            continue
 
         if at == "period":
             if _s(r.subType) == "end":
@@ -357,6 +378,7 @@ def _next_material(rows: list, j: int):
         at = _s(rows[j].actionType)
         if at not in ADMIN_TYPES and at not in ("Foul", "Violation"):
             return rows[j]
+
         if at == "period":
             return rows[j]
         j += 1
