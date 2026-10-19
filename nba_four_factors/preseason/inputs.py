@@ -65,10 +65,13 @@ def _result_frame(payload: dict, name: str | None = None) -> pd.DataFrame:
 
 
 def load_games(season: str) -> pd.DataFrame:
-    return pd.read_parquet(
+    """Team-game rows. Drops the canceled 0-0 placeholder (BOS-IND, 16 Apr 2013,
+    known_anomalies.md): NBA games cannot end level, so margin 0 is never real."""
+    g = pd.read_parquet(
         DATA / "processed" / season / "regular_season.parquet",
         columns=["game_id", "game_date", "team_id", "margin"],
     )
+    return g[g.margin != 0]
 
 
 def load_vegas() -> pd.DataFrame:

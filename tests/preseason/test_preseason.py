@@ -175,3 +175,25 @@ def test_name_key_folds_accents_and_suffixes() -> None:
     assert io.name_key("Kristaps Porziņģis") == io.name_key("Kristaps Porzingis")
     assert io.name_key("Jimmy Butler III") == "jimmy butler"
     assert io.name_key("Kelly Oubre Jr.") == "kelly oubre"
+
+
+def test_coach_flags_new_hire_vs_promoted_interim() -> None:
+    from nba_four_factors.preseason.coaches import coach_flags
+
+    st = pd.DataFrame(
+        [
+            ("2010_11", 1, "Old", 1, 3),
+            ("2010_11", 1, "Interim", 2, 1),
+            ("2011_12", 1, "Interim", 1, 2),
+            ("2012_13", 1, "Fresh", 1, 1),
+            ("2010_11", 2, "Stay", 1, 5),
+            ("2011_12", 2, "Stay", 1, 6),
+        ],
+        columns=["season", "team_id", "coach", "stint", "yrs_franchise"],
+    )
+    f = coach_flags(st).set_index(["season", "team_id"])
+    assert not f.loc[("2011_12", 1), "new_coach"]
+    assert f.loc[("2011_12", 1), "promoted_interim"]
+    assert f.loc[("2011_12", 1), "prev_midseason_change"]
+    assert f.loc[("2012_13", 1), "new_coach"] and f.loc[("2012_13", 1), "offseason_hire"]
+    assert not f.loc[("2011_12", 2), "new_coach"]

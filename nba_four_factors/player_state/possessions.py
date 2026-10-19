@@ -111,6 +111,7 @@ class _Possession:
 
     def add(self, ev: dict, elapsed: float) -> None:
         ev["chance"] = self.chance
+        ev["e"] = round(float(elapsed), 1)
         self.events.append(ev)
         self.end_e = elapsed
 
@@ -129,12 +130,14 @@ def _parse_game(g: pd.DataFrame, home_id: int, away_id: int) -> tuple[list[dict]
     cur: _Possession | None = None
     pending_and1: int | None = None
     last_miss_team: int | None = None
+    last_end: float | None = None
     gid = rows[0].gameId
 
     def close(end_type: str) -> None:
-        nonlocal cur
+        nonlocal cur, last_end
         if cur is None:
             return
+        last_end = cur.end_e
         cur.end_type = end_type
         poss_out.append(
             {
@@ -160,7 +163,10 @@ def _parse_game(g: pd.DataFrame, home_id: int, away_id: int) -> tuple[list[dict]
             cur.flags.add("forced_close")
             close("anomaly")
         if cur is None:
-            cur = _Possession(off_team, period, elapsed, start_type)
+            anchor = elapsed
+            if last_end is not None and last_end <= elapsed:
+                anchor = last_end
+            cur = _Possession(off_team, period, anchor, start_type)
 
     i = 0
     n = len(rows)
@@ -192,6 +198,7 @@ def _parse_game(g: pd.DataFrame, home_id: int, away_id: int) -> tuple[list[dict]
             continue
 
         if at == "period":
+            last_end = None
             if _s(r.subType) == "end":
                 if cur is not None:
                     cur.flags.add("period_end")

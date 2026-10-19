@@ -1,11 +1,14 @@
 """Pull the small set of inputs the preseason win-total module needs.
 
-Three stats.nba.com endpoints, about 62 requests in total:
+Four stats.nba.com endpoints, about 89 requests in total:
 
     drafthistory               one call, every draft since 1947
     leaguedashplayerbiostats   one call per season, age, height, draft slot
     commonteamroster           one call per team for the live season, the
                                current roster with birth date and experience
+    draftcombinestats          one call per draft year from 2000, combine
+                               measurements (height without shoes, wingspan,
+                               standing reach, weight, body fat) and drills
 
 Raw payloads land under data/raw/preseason/ untouched; parsing happens in
 nba_four_factors/preseason/inputs.py. Reruns skip files that already exist
@@ -15,6 +18,7 @@ Run from the repo root:
 
     PYTHONPATH=. uv run python scripts/pull_preseason_inputs.py
     PYTHONPATH=. uv run python scripts/pull_preseason_inputs.py --only rosters --refresh
+    PYTHONPATH=. uv run python scripts/pull_preseason_inputs.py --only combine
 """
 
 from __future__ import annotations
@@ -35,6 +39,7 @@ OUT = REPO / "data" / "raw" / "preseason"
 VEGAS = REPO / "data" / "vegas" / "nba_preseason_win_totals_1997_2026.parquet"
 
 FIRST_BIO_SEASON = 1996
+FIRST_COMBINE_YEAR = 2000
 LIVE_SEASON = "2026-27"
 
 BIO_BOILER = {
@@ -129,9 +134,25 @@ def pull_rosters(client: Client, refresh: bool, season: str) -> None:
     print(f"rosters {season}: {n_ok} pulled, {n_cached} cached, {len(teams)} teams")
 
 
+def pull_combine(client: Client, refresh: bool, last_draft_year: int) -> None:
+    n_ok = n_cached = n_fail = 0
+    for y in range(FIRST_COMBINE_YEAR, last_draft_year + 1):
+        label = _season_label(y)
+        f = OUT / "combine" / f"{y}.json"
+        if f.exists() and not refresh:
+            n_cached += 1
+            continue
+        params = {"LeagueID": "00", "SeasonYear": label}
+        if _save(f, _fetch(client, "draftcombinestats", params)):
+            n_ok += 1
+        else:
+            n_fail += 1
+    print(f"combine: {n_ok} pulled, {n_cached} cached, {n_fail} failed")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--only", choices=["draft", "bios", "rosters"], default=None)
+    ap.add_argument("--only", choices=["draft", "bios", "rosters", "combine"], default=None)
     ap.add_argument("--refresh", action="store_true")
     ap.add_argument("--season", default=LIVE_SEASON)
     args = ap.parse_args()
@@ -143,6 +164,8 @@ def main() -> None:
         pull_bios(client, args.refresh, last_start)
     if args.only in (None, "rosters"):
         pull_rosters(client, args.refresh, args.season)
+    if args.only in (None, "combine"):
+        pull_combine(client, args.refresh, int(args.season[:4]))
 
 
 if __name__ == "__main__":
