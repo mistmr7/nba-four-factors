@@ -56,3 +56,30 @@ is against Covers' preseason consensus lines with no prices attached, so
 it means 57 percent against a reconstructed consensus that could not
 necessarily have been bet at that number. Breakeven at standard -110 juice
 is 52.4 percent; at -115 it is 53.5 percent.
+
+## Overlay: 2027 lottery reform (added 19 Oct 2026, before tip-off)
+
+overlay_lottery_reform_2026_27.csv adjusts the primary projections for the
+new lottery, which first applies to the 2027 draft: 16 lottery teams
+sharing 37 balls; the three worst records get 2 balls each (5.4 percent
+for No. 1) and cannot fall below No. 12; the next seven non-playoff teams
+get 3 balls (8.1 percent); the No. 9 and No. 10 seeds get 2 balls; the
+losers of the 7 vs 8 play-in games get 1 ball. The worst teams are now
+penalized and the 4th through 10th worst have flat odds.
+
+Sizing comes from history (scripts/preseason_tank_dip.py):
+over games 61 to 82, teams in the bottom 3 by early-season margin fall
+3.1 to 4.5 points a game short of what their early margin predicts, about
+2.3 to 3.3 wins; teams ranked 4th to 10th fall 2.0 to 3.9 points short,
+about 1.5 to 2.9 wins. Assumed recovered under the new rules: 2.5 wins for
+the projected bottom 3 (the incentive now runs the other way) and 0.8 for
+projected 4th to 10th (no lottery reason to sink within a flat tier, but
+deadline selling and development minutes remain). Wins are zero-sum, so
+the 13.1 added wins are taken evenly from all 30 teams (0.44 each).
+
+This is a judgment overlay, not a backtested model, and is graded
+separately from the primary picks. It flips three picks, all within half
+a win of the line: DEN and CLE to UNDER, CHI to OVER. The second
+incentive (9th and 10th seeds getting fewer balls than the 4th to 10th
+worst, so teams near the play-in line may prefer to miss it) is not
+applied; it is left to be measured this season.
